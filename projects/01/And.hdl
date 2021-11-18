@@ -15,4 +15,7 @@ CHIP And {
 
     PARTS:
     // Put your code here:
+    // And should just be Not(Nand(.))
+    Nand(a=a, b=b, out=nand);
+    Not(in=nand,out=out);
 }

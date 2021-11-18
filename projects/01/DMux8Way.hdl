@@ -17,4 +17,15 @@ CHIP DMux8Way {
 
     PARTS:
     // Put your code here:
+    // there are a few orders in which we could do this
+    // but I think doing a single 2-way DMux followed by 2 4-way DMux
+    // is promising
+    // might be actually easier to do the 2-way on the most significant bit
+    // but instead i will do it on the LSB because that is trickier
+    //   and want to make sure i understand it
+
+    DMux(in=in, sel=sel[0], a = aceg, b = bdfh);
+    DMux4Way(in=aceg, sel=sel[1..2], a = a, b = c, c = e, d = g);
+    DMux4Way(in=bdfh, sel=sel[1..2], a = b, b = d, c = f, d = h);
+    
 }

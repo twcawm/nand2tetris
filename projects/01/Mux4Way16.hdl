@@ -17,4 +17,11 @@ CHIP Mux4Way16 {
 
     PARTS:
     // Put your code here:
+    // first, we need to Mux16 twice on sel[0], one for sel[1]=0, other for sel[1]=1
+    // second, we shall Mux16 on sel[1] to select between those cases
+
+    Mux16(a=a,b=b,sel=sel[0],out=outabForSel10);
+    Mux16(a=c,b=d,sel=sel[0],out=outcdForSel11);
+
+    Mux16(a=outabForSel10,b=outcdForSel11,sel=sel[1],out=out);
 }

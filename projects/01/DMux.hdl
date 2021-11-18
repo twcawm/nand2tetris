@@ -15,4 +15,11 @@ CHIP DMux {
 
     PARTS:
     // Put your code here:
+    // what if we just treat a and b as two sorta independent outputs
+    // and write as if we are writing two gates, one for each output?
+
+    Not(in=sel,out=notsel);
+    And(a=notsel, b=in, out=a);
+    And(a=sel, b=in, out=b);
+
 }

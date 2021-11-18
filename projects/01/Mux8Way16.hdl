@@ -19,4 +19,13 @@ CHIP Mux8Way16 {
 
     PARTS:
     // Put your code here:
+    // can we use 4way mux to help here?
+    // perhaps 4way mux twice on the 0..1 bits of sel
+    // then 2way mux once on 2 bit of sel?
+
+
+
+    Mux4Way16(out=part1, sel=sel[0..1], a=a,b=b,c=c,d=d);
+    Mux4Way16(out=part2, sel=sel[0..1], a=e,b=f,c=g,d=h);
+    Mux16(out=out, a=part1,b=part2, sel=sel[2]);
 }

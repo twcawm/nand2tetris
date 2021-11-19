@@ -17,9 +17,9 @@ CHIP Bit {
     // Put your code here:
     // seems like we should Mux on load.
 
-    DFF(in=xX, out=afterDff);
+    DFF(in=xX, out = afterDff, out=out);
     Mux(sel = load, a=afterDff, b = in, out=xX); 
 
     //how to now tell the thing that out = afterDiff?
-    Or(a=false, b = afterDff, out=out);
+    //Or(a=false, b = afterDff, out=out);
 }

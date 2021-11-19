@@ -16,4 +16,14 @@ CHIP RAM16K {
 
     PARTS:
     // Put your code here:
+    // once again, analogous to how we built the 512 RAM from 64, except that 
+    //  since we are building 16K from 4K, we only have a factor of 4
+    //  therefore we need to use 4way mux and dmux, if we have them? let's check
+    //  yup, so we need to use a 4way.
+    DMux4Way(in=load, sel=address[12..13], a=l0,b=l1,c=l2,d=l3);
+    RAM4K(address=address[0..11],in=in, load=l0, out=o0);
+    RAM4K(address=address[0..11],in=in, load=l1, out=o1);
+    RAM4K(address=address[0..11],in=in, load=l2, out=o2);
+    RAM4K(address=address[0..11],in=in, load=l3, out=o3);
+    Mux4Way16(a=o0,b=o1,c=o2,d=o3, sel=address[12..13], out=out);
 }

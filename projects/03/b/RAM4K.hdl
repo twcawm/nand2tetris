@@ -16,4 +16,15 @@ CHIP RAM4K {
 
     PARTS:
     // Put your code here:
+    // once again, analogous to how we built the 512 RAM from 64
+    DMux8Way(in=load, sel=address[9..11], a=l0,b=l1,c=l2,d=l3,e=l4,f=l5,g=l6,h=l7);
+    RAM512(address=address[0..8],in=in, load=l0, out=o0);
+    RAM512(address=address[0..8],in=in, load=l1, out=o1);
+    RAM512(address=address[0..8],in=in, load=l2, out=o2);
+    RAM512(address=address[0..8],in=in, load=l3, out=o3);
+    RAM512(address=address[0..8],in=in, load=l4, out=o4);
+    RAM512(address=address[0..8],in=in, load=l5, out=o5);
+    RAM512(address=address[0..8],in=in, load=l6, out=o6);
+    RAM512(address=address[0..8],in=in, load=l7, out=o7);
+    Mux8Way16(a=o0,b=o1,c=o2,d=o3,e=o4,f=o5,g=o6,h=o7, sel=address[9..11], out=out);
 }

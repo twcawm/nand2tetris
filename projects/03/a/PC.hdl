@@ -17,4 +17,34 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
+    // we probably want to use the ALU functionality for the combinational logic
+    //   since it already seems to implement most of what we need
+    //   we want f(x=in, y=fromRegister, ...)
+    //   then, to determine the "in" to the register, we should look at the ALU API
+    //   looks like "reset" has highest priority.  so ...
+    //   hm, I am getting very confused trying to use the ALU for this because "reset", "inc", etc
+    //     have to be translated into a set of 6 bits in that case.
+    //   using Mux16 3 times , one for each of the control bits here, might be better.
+    //     I'll probably get that to work, then come back later if I want to try to use ALU for it.
+ 
+    Register(in = toRegister, load = true, out = out, out = fromRegister);
+    Inc16(in=fromRegister, out=incd);
+    //ALU(x=in,y=fromRegister, ...
+    //reset logic:
+    Mux16(a=fromLoad, b=false, sel=reset, out=toRegister);
+    //load logic:
+    Mux16(a=fromInc, b=in, sel=load, out=fromLoad);
+    //inc logic:
+    Mux16(a=fromRegister, b=incd, sel=inc, out=fromInc);
+    // could these Mux's be swapped in any order?
+    // in fact there's probably a way to do an 8way Mux since we're doing 3 mux (2^3=8) 
+    // the real question is, should we be trying to use the ALU instead?
+    // by the way, the fact that 'reset' has highest priority is enforced by placing it last, immediately before the toRegister.
+    // since toRegister comes from reset mux, we know that reset has highest priority.
+    // this is actually not the case if we use a different order, since for example,
+    // if reset=1 and load=1, we could get a different answer, since toRegister would be
+    //   loaded from input if we put load mux last, and false if we put reset last.
+    // that answers our question: these Mux's cannot be swapped in any order.
+    // the correct order according to the spec is to put the highest priority Mux closest to the register input
+    // in this way, anything that happens in the other bits is "cancelled out" in order of increasing precedence.
 }

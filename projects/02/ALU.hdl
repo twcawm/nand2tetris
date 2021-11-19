@@ -43,4 +43,40 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
+   // it seems like we should use a bunch of mutex to do the stuff like zx
+   // since we can use zx as the sel, x as one input, and false as another
+   // then we can label that as like, xZx for "x after Zx" basically
+
+    Mux16(a=x, b=false, sel = zx, out = xZx);
+    Not16(in=xZx, out = notxZx); // this output holds result of not
+    Mux16(a=xZx, b=notxZx, sel= nx, out= xNZx);
+    // xNZx is the result of x after any specified zx and/or nx operation.
+    // now do the same for y:
+    Mux16(a=y, b=false, sel = zy, out = yZy);
+    Not16(in=yZy, out = notyZy); // this output holds result of not
+    Mux16(a=yZy, b=notyZy, sel= ny, out= yNZy);
+
+    //now we have our corrected input streams 
+    // compute sum and And of these input streams
+    // then use Mux on f to send correct result (also gonna have to Mux on not)
+
+    Add16(a=xNZx, b=yNZy, out=xPy);
+    And16(a=xNZx, b=yNZy, out=xAy);
+
+    Mux16(a=xAy, b=xPy, sel=f, out=xPAy);
+    Not16(in=xPAy, out=notxPAy);
+    Mux16(a=xPAy, b=notxPAy, sel=no, out=ostream, out[15]=ostream15, out[0..7]=ostream07,out[8..15]=ostream815,out=out);
+
+    //now we just have to calculate zr and ng
+    //  zr is And16 with false... oh wait, no it isn't
+    //  we somehow have to check whether all bits in ostream are 0
+    // and output that as a single bit.
+    //    we shall use 8way or!
+    //  ng is Or with ostream[15] and false
+    Or(a=ostream15, b=false, out=ng);
+
+    Or8Way(in=ostream07,out = notZero0);
+    Or8Way(in=ostream815,out = notZero1);
+    Or(a=notZero0, b=notZero1, out=notZero);
+    Not(in=notZero, out=zr);
 }

@@ -34,16 +34,23 @@
 //      i think we ought to just write the inner loop first.  just write a program that blackens the entire screen first.
 //      once that works, it's just writing a trivial outer loop that branches over 1 memloc.
 
+//store the size of the screen
+
+@8192
+D=A
+@scr
+M=D
+
+
 (OUTLOOP)
 
-@i
-M=1
 
+@i
+M=1 //initialize innerloop counter to 1. this actually does need to be inside the outer loop.
 @SCREEN
 D=A
-
 @sl
-M=D
+M=D //set value of sl to be the memory location of current coloring.
 
 //read keyboard
 @KBD
@@ -53,6 +60,10 @@ D=M
 D;JEQ //(white, if zero)
 @LOOPBLK
 D;JNE //(black, if not zero)
+
+//note: on revision, I noticed that we could have just used a single inner loop
+//  with an if/then branch at the coloring instruction
+//  this 2-loop method provides the more general case when we'd maybe want to color in a completely different way
 
 (LOOPWHT)
 

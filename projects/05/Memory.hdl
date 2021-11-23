@@ -28,4 +28,19 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+    // similar to the construction of the RAM units, we DMux on the most significant bit address
+    // then Mux on the most significant bit to get output.
+ 
+    DMux(in=load, sel=address[14], a=loadToRAM,b=loadToIO);
+    RAM16K(address=address[0..13], in=in, load=loadToRAM, out=outFromRAM);
+    //how do we treat the keyboard/screen memory map?
+    //hm, maybe we just use the built-in Screen ship for screen:
+    //  the differentiating bit between screen and kbd is address[13]
+    DMux(in=loadToIO, sel=address[13], a=loadToScr, b=loadToKbd);
+    Screen(address=address[0..12], in=in, load=loadToScr, out=outFromScr);
+    Keyboard(out=outFromKbd);
+    Mux16(a=outFromScr, b=outFromKbd, sel=address[13], out=outFromIO);
+    Mux16(a=outFromRAM, b=outFromIO, sel=address[14], out=out);
+    //in hindsight, could have done this with 4way Mux/DMux.  but this is sort of nice too because it differentiates between memory and memory-mapped-IO devices.
+    
 }

@@ -20,4 +20,10 @@ CHIP Computer {
 
     PARTS:
     // Put your code here:
+    // now that we have a working CPU and Memory, all we have to do
+    // is wire them together in a way similar to fig 5.10
+
+    CPU(inM = outRAM, instruction = fromROM, reset=reset, outM = memVal, writeM = toWriteM, addressM = addressMM, pc = programCounter);
+    Memory(in = memVal, load = toWriteM, address = addressMM, out = outRAM);
+    ROM32K(address=programCounter, out=fromROM);
 }

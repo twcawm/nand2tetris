@@ -40,4 +40,78 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    // this is a very complex chip so we are going to try to implement it in a similar manner to figure 5.9 in the book
+    // the remaining unknown is how to implement the "c" chip from figure 5.9
+    ARegister(in=Ain, load = toLoadA, out=Aout, out[0..14]=addressM);
+    Mux16(a=instruction, b=ALUout, sel=mux4A, out=Ain); // I don't quite know yet how to compute mux4A but we'll figure it out.  Essentially it controls whether input to A is ALU output or instruction.
+    Mux16(a=Aout, b=inM, sel=instruction[12], out=AMout); //this selects whether to use A or M[A]
+
+
+    //when do we want ARegister to load?
+    // when we either have an A-instruction (instruction[15] = 0) 
+    //  or when A accepts an ALU result (instruction[3..5]? ..update: instruction[5]=1 means A accepts.
+    Not(in=instruction[15],out=Ainstr);
+    Or(a=Ainstr, b=instruction[5], out=toLoadA);
+    And(a=instruction[15], b=instruction[5], out=mux4A);   //compute instruction, & store in A.  we use this to be 0--> mux4A selects instruction, 1--> mux4A selects ALUout (to input to Ain)
+    
+    //ok phew i think we have the A register and the A/M mux all specified now.
+    // on to the D register now, I think
+    DRegister(in=ALUout, load=Dload, out=Dout); //when do we want D to load from ALUout?  when the correct instruction[3..5] for D store is set: looking it up, we see that it's instruction[4].
+    //is there any other time we need to store to D?  I guess not, just instruction[4].
+    And(a=instruction[4], b=instruction[15], out=Dload); //have to make sure this is a C-instr, otherwise (an A-instr) instruction[4] has no independent meaning, just part of a constant.
+    //wow ok, D was not bad.  ALU time?
+
+    // it's actually quite difficult to reason independently about why the instruction[6..11] correspond to the operations that they do
+    // based only upon their independent behaviors
+    // i'm not 100% sure if i'm supposed to actually reason this out from first principles
+    // or just to assume that cccccc=instruction[6..11] simply "plugs in" to the already-built ALU API
+    // after thinking about it for like 15 minutes, I'm not making much progress, so I'm going to just plug in those instructions to the ALU bits.
+    // update: compare Figure 4.3 to Figure 2.6
+    // we see from this comparison that the ALU Truth table (2.6) maps exactly onto the compute field of the CPU,
+    // with correspondence x<-->D, y<-->{A,M}, (zx,nx,xy,ny,f,no)<-->(c1,c2,c3,c4,c5,c6)<-->(instr[11],...,instr[6])
+    // therefore we can just plug in the corresponding instruction[...] values into those corresponding ALU inputs
+    // I'm fairly confident that this observation is supposed to be made and that we aren't supposed to reason up from first principles the correspondence between the ALU inputs and the c fields.  I must have either missed this, or it is not explained well enough in the book.
+    ALU(x=Dout, y=AMout, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7],no=instruction[6], out=ALUout, out=outM, zr=ALUzero, ng=ALUneg);
+    //nice, so now we have our first true output: outM.
+    // we need to calculate writeM:
+    // figure 4.4 indicates that this should be d3 == instruction[3] 
+    And(a=instruction[3], b=instruction[15], out=writeM); //compute instruction, & store in M. (otherwise, instruction[3] has no meaning
+    // at this point, I think we have the entire upper part of the CPU diagram.
+    // all that is left is the program counter logic.
+    // just updated ARegister to output 15 bits to addressM.
+    // which inputs do we need for the program counter?
+    // PC accepts in[16], load, inc, reset.
+    //   reset=reset (from overall input)
+    //   inc = 1 by default, I believe.
+    //   load = 0 by default, but here's where we need some thinking/logic:
+    //     if jump(t) then PC(t) = A(t-1) (so we have to load=1)
+    //   so we need to look at the j-bits and the ALU output status bits.
+    //   the ALU tells us if ALU output is zero (zr=ALUzero) and also if negative ng(ALUneg)
+    //     from these primitives we can also calculate positive (not (zr or ng))
+    //     so from those we have primitives for all our conditional jumps
+
+    Or(a=ALUzero, b=ALUneg , out=lez);
+    Not(in=lez, out=ALUpos);
+    Or(a=ALUzero, b=ALUpos, out=gez);
+    Not(in=ALUzero, out=ALUnonzero);
+    
+    //j1: jump if ALUout < 0  <--> instruction[0]
+    //j2: jump if ALUout == 0 <--> instruction[1]
+    //j3: jump if ALUout > 0 <--> instruction[2]
+    // so : load if (instruction[0] AND ALUneg) OR (instruction[1] AND ALUzero) OR (instruction[2] AND ALUpos)
+
+    And(a=ALUneg, b=instruction[2], out=jump0);
+    And(a=ALUzero, b=instruction[1], out=jump1);
+    And(a=ALUpos, b=instruction[0], out=jump2);
+    Or(a=jump0, b=jump1, out=jump01);
+    Or(a=jump01, b=jump2, out=jump012);
+    And(a=jump012, b=instruction[15], out=toJump);
+    //when the ALU output corresponds to the relevant jump logic, AND the instruction is a C-instruction, have PC load the A address
+    
+    PC(in=Aout, load=toJump, inc=true, reset=reset, out[0..14]=pc);
+    //this should cover everything
+    //there was originally an error because I had the wrong indexing for the jmp instructions
+    // i was using the ordering from j1, j2, j3 but it needs to be reversed, instr[2], instr[1], instr[0].
+    
+    
 }

@@ -57,23 +57,3 @@ while(psr.hasMoreCommands()):
   if(psr.commandType() == "C_COMMAND" or psr.commandType() == "A_COMMAND"):
     f_hack.write(hack_code)
 
-#old, non-symbol assembler:
-'''
-#implement non-symbol assembler:
-while(psr.hasMoreCommands()):
-  psr.advance()
-  
-  if(psr.commandType() == "A_COMMAND"):
-    symbol = int(psr.symbol()) #for now this will work - when we handle true symbols, we'll need to update this
-    hack_code = format(symbol,'016b') + "\n" 
-
-  if(psr.commandType() == "C_COMMAND"):
-    h_dest = code.dest(psr.dest() )
-    h_comp = code.comp(psr.comp() )
-    h_jump = code.jump(psr.jump() )
-
-    hack_code = "111" + h_comp + h_dest + h_jump + "\n"
-
-  if(psr.commandType() == "C_COMMAND" or psr.commandType() == "A_COMMAND"):
-    f_hack.write(hack_code)
-'''

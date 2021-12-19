@@ -27,7 +27,8 @@ class Parser:
       self.current_asm_line = self.current_asm_line.split('//')[0] #get rid of comments
       self.current_asm_line = ''.join(self.current_asm_line.split()) #get rid of annoying spaces and newline
       if(self.commandType() == "A_COMMAND" or self.commandType() == "C_COMMAND"):
-        self.hack_line = self.hack_line + 1
+        self.hack_line = self.hack_line + 1 #thus, we keep track of the ROM addresses needed for the labels
+        #hack_line is -1 before any hack commands have been read.  it is 0 at the first hack command (ROM address)
     else:
       print("error: called advance() but hasMoreCommands() is false")
 
@@ -52,7 +53,7 @@ class Parser:
       #could add better error checking here
       ret.strip()
       return ret
-    elif(cmdT == "C_COMMAND"):
+    elif(cmdT == "L_COMMAND"):
       ret = self.current_asm_line.split('(')[1]
       ret = ret.split(')')[0]
       ret.strip()

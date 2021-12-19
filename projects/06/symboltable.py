@@ -44,11 +44,17 @@ class SymbolTable:
     else:
       if(address):
         self.table[symbol] = address #just assign into dictionary
+        #ordinarily we would probably want to do more error checking, but this should do.
       else:
         #first, check if current ram_pointer is taken.  if so, increment it and retry
-        if self.ram_pointer in self.table.values(): #if ram_pointer is already taken, do not overwrite
+        '''
+        if (False): #self.ram_pointer in self.table.values(): #if ram_pointer is already taken, do not overwrite
+          #note: we don't want to check this because both ROM and RAM addresses can be used in the table.
           self.ram_pointer = self.ram_pointer + 1
           self.addEntry(symbol) #this is a recursive call to try again with a new ram_pointer.  not very elegant.  but if we only use the no-address version , this should never happen.
+        '''
+        #update: we do not want to do error checking here since the single symbol table is used for both ROM and RAM addresses (which need not be distinct)
+        # a better implementation might try to use 2 symbol tables or some other flag, but this should do for now.
         self.symbols[symbol] = self.ram_pointer
         self.ram_pointer = self.ram_pointer + 1 
 

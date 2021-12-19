@@ -39,6 +39,7 @@ class SymbolTable:
     #  add entries without needing an address manually passed in.
 
   def addEntry(self, symbol, address=None):
+    #print("adding entry " + symbol)
     if(symbol in self.table):
       print("error in symboltable: trying to add symbol that is already bound")
     else:
@@ -55,7 +56,7 @@ class SymbolTable:
         '''
         #update: we do not want to do error checking here since the single symbol table is used for both ROM and RAM addresses (which need not be distinct)
         # a better implementation might try to use 2 symbol tables or some other flag, but this should do for now.
-        self.symbols[symbol] = self.ram_pointer
+        self.table[symbol] = self.ram_pointer
         self.ram_pointer = self.ram_pointer + 1 
 
   def contains(self, symbol):

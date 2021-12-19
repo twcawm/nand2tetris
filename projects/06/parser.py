@@ -57,6 +57,7 @@ class Parser:
       ret = self.current_asm_line.split('(')[1]
       ret = ret.split(')')[0]
       ret.strip()
+      return ret
     else:
       print("error: symbol() called on non-A or C command.")
 

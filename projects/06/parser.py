@@ -26,6 +26,8 @@ class Parser:
       self.current_asm_line = self.lines_asm[self.asm_line]
       self.current_asm_line = self.current_asm_line.split('//')[0] #get rid of comments
       self.current_asm_line = ''.join(self.current_asm_line.split()) #get rid of annoying spaces and newline
+      if(self.commandType() == "A_COMMAND" or self.commandType() == "C_COMMAND"):
+        self.hack_line = self.hack_line + 1
     else:
       print("error: called advance() but hasMoreCommands() is false")
 

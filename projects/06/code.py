@@ -2,7 +2,8 @@
 # implements the suggested API
 
 def dest(str_dest):
-  dest_mnemonic = {"null" : "000",
+  # parser returns empty string for no destination (same for jump)
+  dest_mnemonic = {"" : "000",
                    "M"    : "001",
                    "D"    : "010",
                    "MD"   : "011",
@@ -17,7 +18,7 @@ def dest(str_dest):
     return
 
 def jump(str_jump):
-  jump_mnemonic = {"null" : "000",
+  jump_mnemonic = {"" : "000",
                    "JGT"  : "001",
                    "JEQ"  : "010",
                    "JGE"  : "011",

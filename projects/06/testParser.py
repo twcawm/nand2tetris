@@ -12,3 +12,4 @@ while(psr.hasMoreCommands()):
     print(psr.commandType() + " ||| symbol: " + psr.symbol() )
   if(psr.commandType() == None):
     print("no command.")
+  print("asm_line: "+str(psr.asm_line)+ " hack_line: "+str(psr.hack_line))

@@ -1,7 +1,7 @@
 class CodeWriter:
 
   def __init__(self, filename):
-    self.fout = open("filename", "w")
+    self.fout = open(filename, "w")
     self.labelCount = 0
 
 
@@ -12,7 +12,7 @@ class CodeWriter:
 
 
   def setFileName(self, filename):
-    self.fin = open("filename", "w")
+    self.fin = open(filename, "w")
 
   def writeArithmetic(self, command):
     if("add" == command): 
@@ -143,7 +143,7 @@ class CodeWriter:
   def writePushPop(self, command, segment, index): #self, string, string, int
     if("push" == command):
       if("constant" == segment):
-        towrite = ("@"+index+"\n" #place constant into A
+        towrite = ("@"+str(index)+"\n" #place constant into A
           "D=A\n" #store the constant in D
           "@SP\n" #put stack pointer in M
           "A=M\n" #load stack pointer into A (now M refers to value 1 past top of stack)
@@ -156,3 +156,8 @@ class CodeWriter:
         pass #other forms of Push implemented later
     else:
       pass #Pop etc. implemented later
+
+    self.fout.write(towrite) #write the constructed assembly to file.
+
+  def close(self):
+    self.fout.close()

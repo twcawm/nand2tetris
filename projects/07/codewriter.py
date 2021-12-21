@@ -12,7 +12,6 @@ class CodeWriter:
 
 
   def setFileName(self, filename): #this filename is of the form *.vm (something[:-3])
-    self.fin = open(filename, "w")
     if(filename.endswith(".vm")):
       self.static_namespace = filename[:-3]
       self.static_namespace = self.static_namespace.split('/')[-1] #we don't want full path, just final name
@@ -239,7 +238,7 @@ class CodeWriter:
           "M=M+1\n") #increment it
       elif("static" == segment):
         #note: "each static variable j in file Xxx.vm is translated into the assembly symbol Xxx.j"
-        towrite=("@"+static_namespace+"."+str(index)+"\n"
+        towrite=("@"+self.static_namespace+"."+str(index)+"\n"
           "D=M\n" #store value of static variable in D
           "@SP\n" #point at the stack pointer (this assembly language isn't confusing, is it?)
           "A=M\n" #point to newtop of stack
@@ -345,7 +344,7 @@ class CodeWriter:
           "M=M-1\n" #decrement stack pointer
           "A=M\n" #get M[SPnew] by pointing there
           "D=M\n" #store topstack value to D
-          "@"+static_namespace+"."+str(index)+"\n" #point to the static variable
+          "@"+self.static_namespace+"."+str(index)+"\n" #point to the static variable
           "M=D\n") #store the popped value in the static variable
           
     self.fout.write(towrite) #write the constructed assembly to file.

@@ -8,6 +8,7 @@ if arg.endswith(".vm"):
   psr = parser.Parser(arg)
   filename_writer = arg[:-3]+".asm"
   writer = codewriter.CodeWriter(filename_writer)
+  writer.setFileName(arg) #needed to set up static_namespace
   
 else:
   #it is a directory

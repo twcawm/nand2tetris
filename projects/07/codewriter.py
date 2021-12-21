@@ -1,6 +1,6 @@
 class CodeWriter:
 
-  def __init__(self, filename):
+  def __init__(self, filename): #this filename is of the form *.asm (something[:-4])
     self.fout = open(filename, "w")
     self.labelCount = 0
 
@@ -11,8 +11,13 @@ class CodeWriter:
     
 
 
-  def setFileName(self, filename):
+  def setFileName(self, filename): #this filename is of the form *.vm (something[:-3])
     self.fin = open(filename, "w")
+    if(filename.endswith(".vm")):
+      self.static_namespace = filename[:-3]
+      self.static_namespace = self.static_namespace.split('/')[-1] #we don't want full path, just final name
+    else:
+      print("error in setFileName: does not end with '.vm'")
 
   def writeArithmetic(self, command):
     if("add" == command): 
@@ -152,11 +157,197 @@ class CodeWriter:
           "@SP\n" #get ready to increment stack pointer
           "M=M+1\n") #increment stack pointer
           
-      else:
-        pass #other forms of Push implemented later
-    else:
-      pass #Pop etc. implemented later
+      #note: LCL and ARG are extremely similar, only differ by using @LCL vs @ARG
+      #  update: THIS and THAT are also exactly the same.
+      # could improve this in the future by modularizing to share all commands except that.  but then again it only repeats once.
+      #note: TEMP is different than LCL,ARG,THIS,THAT bc it does not store a pointer to ram, rather it's just 5-12.
+      elif("local" == segment):
+        #get value at top of stack, store in memory[memory[LCL+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the offset in D
+          "@LCL\n" #get ram[...] in A, so M points to address of ... (local, arg, etc.)
+          "A=M+D\n" #point to the address of the desired value
+          "D=M\n" #D stores the desired value
 
+          "@SP\n" #point to SP to get address in M (1past top of current stack)
+          "A=M\n" #point to 1past top of current stack
+          "M=D\n" #store the desired value (in D) onto the stack
+          "@SP\n" #get ready to increment stack pointer
+          "M=M+1\n") #increment it
+      elif("argument" == segment):
+        #get value at top of stack, store in memory[memory[ARG+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the offset in D
+          "@ARG\n" #get ram[...] in A, so M points to address of ... (local, arg, etc.)
+          "A=M+D\n" #point to the address of the desired value
+          "D=M\n" #D stores the desired value
+
+          "@SP\n" #point to SP to get address in M (1past top of current stack)
+          "A=M\n" #point to 1past top of current stack
+          "M=D\n" #store the desired value (in D) onto the stack
+          "@SP\n" #get ready to increment stack pointer
+          "M=M+1\n") #increment it
+      elif("this" == segment):
+        #get value stored in memory[memory[THIS+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the offset in D
+          "@THIS\n" #get ram[...] in A, so M points to address of ... (local, arg, etc.)
+          "A=M+D\n" #point to the address of the desired value
+          "D=M\n" #D stores the desired value
+
+          "@SP\n" #point to SP to get address in M (1past top of current stack)
+          "A=M\n" #point to 1past top of current stack
+          "M=D\n" #store the desired value (in D) onto the stack
+          "@SP\n" #get ready to increment stack pointer
+          "M=M+1\n") #increment it
+      elif("that" == segment):
+        #get value stored in memory[memory[THAT+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the offset in D
+          "@THAT\n" #get ram[...] in A, so M points to address of ... (local, arg, etc.)
+          "A=M+D\n" #point to the address of the desired value
+          "D=M\n" #D stores the desired value
+
+          "@SP\n" #point to SP to get address in M (1past top of current stack)
+          "A=M\n" #point to 1past top of current stack
+          "M=D\n" #store the desired value (in D) onto the stack
+          "@SP\n" #get ready to increment stack pointer
+          "M=M+1\n") #increment it
+      elif("pointer" == segment):
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the offset in D
+          "@THIS\n" #get ram[...] in A (could also use R3 here, a synonym.)
+          "A=A+D\n" #point to the address of the desired value (THIS or THAT, essentially, in the case of pointer)
+          "D=M\n" #D stores the desired value
+
+          "@SP\n" #point to SP to get address in M (1past top of current stack)
+          "A=M\n" #point to 1past top of current stack
+          "M=D\n" #store the desired value (in D) onto the stack
+          "@SP\n" #get ready to increment stack pointer
+          "M=M+1\n") #increment it
+      elif("temp" == segment): #temp is R5-R12
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the offset in D
+          "@R5\n" #get ram[...] in A
+          "A=A+D\n" #point to the address of the desired value
+          "D=M\n" #D stores the desired value
+
+          "@SP\n" #point to SP to get address in M (1past top of current stack)
+          "A=M\n" #point to 1past top of current stack
+          "M=D\n" #store the desired value (in D) onto the stack
+          "@SP\n" #get ready to increment stack pointer
+          "M=M+1\n") #increment it
+      elif("static" == segment):
+        #note: "each static variable j in file Xxx.vm is translated into the assembly symbol Xxx.j"
+        towrite=("@"+static_namespace+"."+str(index)+"\n"
+          "D=M\n" #store value of static variable in D
+          "@SP\n" #point at the stack pointer (this assembly language isn't confusing, is it?)
+          "A=M\n" #point to newtop of stack
+          "M=D\n" #store the value of the static variable at newtop
+          "@SP\n" #go back to stack pointer to increment it
+          "M=M+1\n")
+
+
+
+
+    elif("pop" == command):
+      if("local" == segment):
+        #get value at top of stack, store in memory[memory[LCL+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the constant in D
+          "@LCL\n" #get ram[1] in A, so M points to address of local
+          "D=M+D\n" #D stores the address of the desired value
+          "@R14\n" #M[R14] will be used (R13-R15 are general-purpose, so why not?)
+          "M=D\n" #put the desired address in M[R14]
+          "@SP\n" #get the value at the top of the stack
+          "M=M-1\n" #decrement the stack pointer
+          "A=M\n" #get M[SPnew] by pointing
+          "D=M\n" #put value previously at top of stack in D
+          "@R14\n" #retrieve desired address
+          "A=M\n" #point to desired address
+          "M=D\n") #M[desired address] <-- desired value (D, from previous top of stack)
+      elif("argument" == segment):
+        #get value at top of stack, store in memory[memory[ARG+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the constant in D
+          "@ARG\n" #get ram[...] in A, so M points to address of ...
+          "D=M+D\n" #D stores the address of the desired value
+          "@R14\n" #M[R14] will be used (R13-R15 are general-purpose, so why not?)
+          "M=D\n" #put the desired address in M[R14]
+          "@SP\n" #get the value at the top of the stack
+          "M=M-1\n" #decrement the stack pointer
+          "A=M\n" #get M[SPnew] by pointing
+          "D=M\n" #put value previously at top of stack in D
+          "@R14\n" #retrieve desired address
+          "A=M\n" #point to desired address
+          "M=D\n") #M[desired address] <-- desired value (D, from previous top of stack)
+      elif("this" == segment):
+        #get value stored in memory[memory[THIS+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the constant in D
+          "@THIS\n" #get ram[...] in A, so M points to address of ...
+          "D=M+D\n" #D stores the address of the desired value
+          "@R14\n" #M[R14] will be used (R13-R15 are general-purpose, so why not?)
+          "M=D\n" #put the desired address in M[R14]
+          "@SP\n" #get the value at the top of the stack
+          "M=M-1\n" #decrement the stack pointer
+          "A=M\n" #get M[SPnew] by pointing
+          "D=M\n" #put value previously at top of stack in D
+          "@R14\n" #retrieve desired address
+          "A=M\n" #point to desired address
+          "M=D\n") #M[desired address] <-- desired value (D, from previous top of stack)
+      elif("that" == segment):
+        #get value stored in memory[memory[ARG+index]]
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the constant in D
+          "@THAT\n" #get ram[...] in A, so M points to address of ...
+          "D=M+D\n" #D stores the address of the desired value
+          "@R14\n" #M[R14] will be used (R13-R15 are general-purpose, so why not?)
+          "M=D\n" #put the desired address in M[R14]
+          "@SP\n" #get the value at the top of the stack
+          "M=M-1\n" #decrement the stack pointer
+          "A=M\n" #get M[SPnew] by pointing
+          "D=M\n" #put value previously at top of stack in D
+          "@R14\n" #retrieve desired address
+          "A=M\n" #point to desired address
+          "M=D\n") #M[desired address] <-- desired value (D, from previous top of stack)
+      elif("temp" == segment):
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the constant in D
+          "@R5\n" #get ram[...] in A, so M points to address of ...
+          "D=A+D\n" #D stores the address of the desired value
+          "@R14\n" #M[R14] will be used (R13-R15 are general-purpose, so why not?)
+          "M=D\n" #put the desired address in M[R14]
+          "@SP\n" #get the value at the top of the stack
+          "M=M-1\n" #decrement the stack pointer
+          "A=M\n" #get M[SPnew] by pointing
+          "D=M\n" #put value previously at top of stack in D
+          "@R14\n" #retrieve desired address
+          "A=M\n" #point to desired address
+          "M=D\n") #M[desired address] <-- desired value (D, from previous top of stack)
+      elif("pointer" == segment):
+        towrite = ("@"+str(index)+"\n"
+          "D=A\n" #store the constant in D
+          "@THIS\n" #get ram[...] in A, so M points to address of ...
+          "D=A+D\n" #D stores the address of the desired value
+          "@R14\n" #M[R14] will be used (R13-R15 are general-purpose, so why not?)
+          "M=D\n" #put the desired address in M[R14]
+          "@SP\n" #get the value at the top of the stack
+          "M=M-1\n" #decrement the stack pointer
+          "A=M\n" #get M[SPnew] by pointing
+          "D=M\n" #put value previously at top of stack in D
+          "@R14\n" #retrieve desired address
+          "A=M\n" #point to desired address
+          "M=D\n") #M[desired address] <-- desired value (D, from previous top of stack)
+      elif("static" == segment):
+        #note: "each static variable j in file Xxx.vm is translated into the assembly symbol Xxx.j"
+        towrite = ("@SP\n"
+          "M=M-1\n" #decrement stack pointer
+          "A=M\n" #get M[SPnew] by pointing there
+          "D=M\n" #store topstack value to D
+          "@"+static_namespace+"."+str(index)+"\n" #point to the static variable
+          "M=D\n") #store the popped value in the static variable
+          
     self.fout.write(towrite) #write the constructed assembly to file.
 
   def close(self):

@@ -38,7 +38,7 @@ class CodeWriter:
         )
 
     elif("eq" == command): #x == y (y top of stack, x 1 below)
-      eq_label = newLabel()
+      eq_label = self.newLabel()
       towrite = ("@SP\n"
         "M=M-1\n" #decrement value of stack pointer
         "A=M\n" #point to top of stack (y)
@@ -66,7 +66,7 @@ class CodeWriter:
     #      so a possible future improvement could be to modularize this and only in sert the correct jump command.
     #      for now we will just keep the full form since it only repeats twice.
     elif("gt" == command): #x > y (y top of stack, x 1 below)
-      eq_label = newLabel()
+      eq_label = self.newLabel()
       towrite = ("@SP\n"
         "M=M-1\n" #decrement value of stack pointer
         "A=M\n" #point to top of stack (y)
@@ -90,7 +90,7 @@ class CodeWriter:
         )
         
     elif("lt" == command): #x < y (y top of stack , x 1 below)
-      eq_label = newLabel()
+      eq_label = self.newLabel()
       towrite = ("@SP\n"
         "M=M-1\n" #decrement value of stack pointer
         "A=M\n" #point to top of stack (y)

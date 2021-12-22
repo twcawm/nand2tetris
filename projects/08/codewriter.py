@@ -167,7 +167,7 @@ class CodeWriter:
     )
     self.fout.write(towrite) #write the constructed assembly to file.
 
-  def writeFunction(functionName, numLocals):
+  def writeFunction(self, functionName, numLocals):
     self.functionName = functionName #update functionName field
     init_loop = functionName + "_INIT_LOOP"
     init_end = functionName + "_INIT_END"

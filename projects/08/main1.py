@@ -34,7 +34,7 @@ if arg.endswith(".vm"):
     elif(cmdType == "C_RETURN"):
       writer.writeReturn()
     elif(cmdType == "C_FUNCTION"):
-      writer.writeLabel(psr.arg1(),psr.arg2())
+      writer.writeFunction(psr.arg1(),psr.arg2())
 
     else:
       print("error: main function does not recognize command type")
@@ -91,7 +91,7 @@ else:
       elif(cmdType == "C_RETURN"):
         writer.writeReturn()
       elif(cmdType == "C_FUNCTION"):
-        writer.writeLabel(psr.arg1(),psr.arg2())
+        writer.writeFunction(psr.arg1(),psr.arg2())
 
       else:
         print("error: main function does not recognize command type")

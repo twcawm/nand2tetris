@@ -5,6 +5,7 @@ class CodeWriter:
     self.labelCount = 0
     self.call_count = 0
     self.functionName = "default_fn"
+    self.writeInit()
 
 
   def newLabel(self):

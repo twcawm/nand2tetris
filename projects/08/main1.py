@@ -95,7 +95,8 @@ else:
 
       else:
         print("error: main function does not recognize command type")
+    #note: we do NOT want to close the writer here!  we previously did this and it was a bug.
+    #close the writer only after ALL files have been translated.
 
-    writer.close()
-
+  writer.close()
 

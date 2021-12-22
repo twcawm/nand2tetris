@@ -3,6 +3,7 @@ class CodeWriter:
   def __init__(self, filename): #this filename is of the form *.asm (something[:-4])
     self.fout = open(filename, "w")
     self.labelCount = 0
+    self.call_count = 0
     self.functionName = "default_fn"
 
 
@@ -36,13 +37,181 @@ class CodeWriter:
       "@"+self.functionName+"$"+label+"\n" #has to include functionName
       "D;JNE\n") #jump if the value is not equal to zero
     self.fout.write(towrite) #write the constructed assembly to file.
-   
 
-  def writeInit(self): #TODO: update this further
-    towrite = "@256\nD=A\n@SP\nM=D\n"
-    towrite += "Sys.init\n" #THIS HAS TO BE UPDATED! this is not fully done.
+  def writeCall(self, functionName, numArgs):
+    self.call_count = self.call_count + 1
+    returnSymbol = functionName+"_RETURN_"+str(self.call_count)
+
+    towrite = (
+      "@"+returnSymbol+"\n" #push the return address to the stack
+      "D=A\n" # (store return address in D)
+      "@SP\n" # point to 1past topstack
+      "A=M\n" 
+      "M=D\n" # store desired value at that location
+      "@SP\n"
+      "M=M+1\n" #increment stack pointer
+
+      "@LCL\n" # push LCL to the stack
+      "D=M\n"
+      "@SP\n"
+      "A=M\n"
+      "M=D\n"
+      "@SP\n"
+      "M=M+1\n" #increment stack pointer
+
+      "@ARG\n" # push ARG to the stack
+      "D=M\n"
+      "@SP\n"
+      "A=M\n"
+      "M=D\n"
+      "@SP\n"
+      "M=M+1\n" #increment stack pointer
+
+      "@THIS\n" # push THIS to the stack
+      "D=M\n"
+      "@SP\n"
+      "A=M\n"
+      "M=D\n"
+      "@SP\n"
+      "M=M+1\n" #increment stack pointer
+
+      "@THAT\n" # push THAT to the stack
+      "D=M\n"
+      "@SP\n"
+      "A=M\n"
+      "M=D\n"
+      "@SP\n"
+      "M=M+1\n" #increment stack pointer
+
+      #now we have to compute and set set ARG to SP - n - 5
+      "@"+str(numArgs)+"\n"
+      "D=A\n"
+      "@5\n"
+      "D=D+A\n" #D is (n+5)
+      "@SP\n"
+      "D=M-D\n" #store SP - n - 5 in D
+      "@ARG\n"
+      "M=D\n" #store that in Arg
+
+      #now we have to set LCL to SP
+      "@SP\n"
+      "D=M\n"
+      "@LCL\n"
+      "M=D\n"
+
+      "@"+functionName+"\n"
+      "0;JMP\n" #unconditional jump to wherever the function code is
+
+      "("+returnSymbol+")\n"
+    )
     self.fout.write(towrite) #write the constructed assembly to file.
+
+  def writeReturn(self):
+    towrite = (
+      "@LCL\n"
+      "D=M\n" #put LCL in D
+      "@R13\n" #put this value in a temporary var, "FRAME" (R13 is temporary FRAME)
+      "M=D\n"
+
+      "@5\n" #about to do RET = m(FRAME - 5)
+      "A=D-A\n" #D is holding FRAME, A now holds FRAME-5
+      "D=M\n" #store return address
+      "@R15\n" #use R15 to store return address
+      "M=D\n"
+
+      #now we pop a value (THE RETURN VALUE!) into ARG
+      #(the next set of commands will place this at the top of the caller stack)
+      "@SP\n" 
+      "M=M-1\n"
+      "A=M\n"
+      "D=M\n"
+      "@ARG\n"
+      "A=M\n" #point to addres stored by ARG
+      "M=D\n" #store the popped value in that address
+
+      "D=A\n" #SP = ARG + 1.  this moves SP back to caller stack.
+      "@SP\n"
+      "M=D+1\n"
+
+      "@R13\n" #put m(FRAME-1) into THAT.  recall @R13 stores FRAME
+      "M=M-1\n" #(decrement - now, m[R13] is FRAME-1)
+      "A=M\n"
+      "D=M\n"
+      "@THAT\n"
+      "M=D\n"
+
+      "@R13\n" #put m(FRAME-2) into THIS.  recall @R13 stores FRAME
+      "M=M-1\n" #decrement again: now, m[R13] is FRAME-2
+      "A=M\n"
+      "D=M\n"
+      "@THIS\n"
+      "M=D\n"
+   
+      "@R13\n" #put m(FRAME-3) into ARG
+      "M=M-1\n" #decrement again: now, m[R13] is FRAME-3
+      "A=M\n"
+      "D=M\n"
+      "@ARG\n"
+      "M=D\n"
+
+      "@R13\n" #put m(FRAME-4) into LCL
+      "M=M-1\n" #decrement again: now, m[R13] is FRAME-4
+      "A=M\n"
+      "D=M\n"
+      "@LCL\n"
+      "M=D\n"
+
+      "@R15\n" #point to where return address is stored
+      "A=M\n" #load return address
+      "0;JMP\n" #unconditional jump to return address.  all is well.
+    )
+    self.fout.write(towrite) #write the constructed assembly to file.
+
+  def writeFunction(functionName, numLocals):
+    self.functionName = functionName #update functionName field
+    init_loop = functionName + "_INIT_LOOP"
+    init_end = functionName + "_INIT_END"
+    towrite = (
+      "(" + functionName + ")\n"
+      "@"+str(numLocals)+"\n"
+      "D=A\n"
+      "@R14\n" #use R14 as a temporary var
+      "M=D\n"  #to store the number of local vars
+
+      "("+init_loop+")\n" #begin init loop
+      "@"+init_end+"\n"
+      "D;JEQ\n" #if D is 0, go to end of init loop
     
+      #our job is to initialize function locals by pushing 0 to stack.
+      "@0\n" #point to stack pointer... except not.  we're just using 0 as a value.
+      "D=A\n" #store 0 in D
+      "@SP\n" #point to stack pointer... for real this time (don't you love Hack assembly?)
+      "A=M\n" #point to 1past top of stack
+      "M=D\n" #set that value to 0
+      "@SP\n" #increment stack pointer to finish push.
+      "M=M+1\n"
+      "@R14\n" #decrement the number of temporary vars left to initialize
+      "M=M-1\n"
+      "D=M\n" #also store the #locals left to initialize in D (that's what we're using to terminate)
+      "@"+init_loop+"\n"
+      "0;JMP\n"
+      "("+init_end+")\n"
+    )
+    self.fout.write(towrite) 
+      
+
+  def writeInit(self): 
+    towrite = ("@256\n"
+      "D=A\n"
+      "@SP\n"
+      "M=D\n")
+    self.fout.write(towrite)
+
+    self.writeCall("Sys.init",0)
+    #we're basically just using the suggested implementation.
+    #not sure whether there is any error checking or things to handle from Sys.init.
+    #for now we will leave it alone.
+
 
   def writeArithmetic(self, command):
     if("add" == command): 

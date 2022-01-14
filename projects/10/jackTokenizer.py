@@ -1,5 +1,22 @@
 class JackTokenizer:
 
+  l_keywords = {"class", "constructor", "function", "method", "field", "static", "var", 
+              "int", "char", "boolean", "void", "true", "false", "null", "this",
+              "let", "do", "if", "else", "while", "return"}
+  l_symbols = {"{","}","(",")","[","]",".",",",";","+","-","*","/","&","|","<",">","=","-"}
+
+  re_KEYWORD = '(?<!\w)('
+  re_KEYWORD = re_KEYWORD + "|".join(l_keywords)
+  re_KEYWORD = re_KEYWORD + ')(?!\w)'
+  # '(?!\w)|' means "do not match \w (unicode word characters) after this".  \w means [a-zA-Z0-9_] basically.
+  # and '(?<!\w)' does the same thing for "behind this".  basically, negative lookahead and lookbehind.
+  '''
+  re_SYMBOL 
+  re_IDENTIFIER
+  re_INT_CONST
+  re_STRING_CONST
+  '''
+
   def __init__(self, filename):
     f_jack = open(filename,'r')
     self.txt_jack = f_jack.read() #instead of readlines, we will use read() since comments can be multiline

@@ -6,6 +6,11 @@ class JackTokenizer:
               "int", "char", "boolean", "void", "true", "false", "null", "this",
               "let", "do", "if", "else", "while", "return"]
   l_symbols = ["{","}","(",")","[","]",".",",",";","+","-","*","/","&","|","<",">","=","-"]
+  d_lex = {"KEYWORD":"keyword",
+           "SYMBOL":"symbol",
+           "IDENTIFIER":"identifier",
+           "INT_CONST":"integerConstant",
+           "STRING_CONST":"stringConstant"}
 
   re_KEYWORD = '(?<!\w)' + '(?!\w)|(?<!\w)'.join(l_keywords)+'(?!\w)'
   # '(?!\w)|' means "do not match \w (unicode word characters) after this".  \w means [a-zA-Z0-9_] basically.
@@ -19,7 +24,7 @@ class JackTokenizer:
 
   #re_lex_element = "|".join([re_KEYWORD,re_SYMBOL,re_IDENTIFIER,re_INT_CONST,re_STRING_CONST])
   re_lex_element = "|".join([re_KEYWORD,re_SYMBOL,re_INT_CONST,re_STRING_CONST,re_IDENTIFIER])
-  print("re_lex_element: " + re_lex_element)
+  #print("re_lex_element: " + re_lex_element)
   compiled_lex_element = re.compile(re_lex_element) #this is an attempt to match all lexical elements of the Jack language
 
   def __init__(self, filename):
@@ -35,8 +40,15 @@ class JackTokenizer:
     self.current_token = None
 
     self.fix_symbols()
+    #self.output_xml()
 
 
+  def output_xml(self):
+    print("<tokens>") 
+    for token in self.tokens:
+      print("<"+self.d_lex[token[0]]+"> "+token[1]+" </"+self.d_lex[token[0]]+">")
+    print("</tokens>") 
+      
   def fix_symbols(self):
     #replace <, >, ", &
     replacers = {'<': '&lt;', 

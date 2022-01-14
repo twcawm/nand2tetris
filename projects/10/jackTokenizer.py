@@ -46,7 +46,10 @@ class JackTokenizer:
   def output_xml(self):
     print("<tokens>") 
     for token in self.tokens:
-      print("<"+self.d_lex[token[0]]+"> "+token[1]+" </"+self.d_lex[token[0]]+">")
+      if(token[0] == "STRING_CONST"):
+        print("<"+self.d_lex[token[0]]+"> "+token[1][1:-1]+" </"+self.d_lex[token[0]]+">")
+      else:
+        print("<"+self.d_lex[token[0]]+"> "+token[1]+" </"+self.d_lex[token[0]]+">")
     print("</tokens>") 
       
   def fix_symbols(self):

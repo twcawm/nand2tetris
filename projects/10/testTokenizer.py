@@ -1,6 +1,6 @@
 import jackTokenizer
 
-tok = jackTokenizer.JackTokenizer("Square/SquareGame.jack")
+tok = jackTokenizer.JackTokenizer("ArrayTest/Main.jack")
 
 tok.output_xml()
 

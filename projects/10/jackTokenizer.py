@@ -5,7 +5,7 @@ class JackTokenizer:
   l_keywords = ["class", "constructor", "function", "method", "field", "static", "var", 
               "int", "char", "boolean", "void", "true", "false", "null", "this",
               "let", "do", "if", "else", "while", "return"]
-  l_symbols = ["{","}","(",")","[","]",".",",",";","+","-","*","/","&","|","<",">","=","-"]
+  l_symbols = ["{","}","(",")","[","]",".",",",";","+","~","*","/","&","|","<",">","=","-"]
   d_lex = {"KEYWORD":"keyword",
            "SYMBOL":"symbol",
            "IDENTIFIER":"identifier",

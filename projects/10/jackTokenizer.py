@@ -34,6 +34,24 @@ class JackTokenizer:
     self.current_index = -1 #we need to all advance() to get to the first element of the tokens list.
     self.current_token = None
 
+    self.fix_symbols()
+
+
+  def fix_symbols(self):
+    #replace <, >, ", &
+    replacers = {'<': '&lt;', 
+                 '>': '&gt;',
+                 '"': '&quot;',
+                 '&': '&amp;' 
+                }
+    new_tokens = []
+    for token in self.tokens:
+      if(token[0] == "SYMBOL" and token[1] in replacers):
+        new_tokens.append((token[0], replacers[token[1]]))
+      else:
+        new_tokens.append((token[0],token[1]))
+    self.tokens = new_tokens
+
   def hasMoreTokens(self):
     return self.current_index < (len(self.tokens) - 1)
 

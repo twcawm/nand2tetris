@@ -1,0 +1,107 @@
+re_lex_element: (?<!\w)class(?!\w)|(?<!\w)constructor(?!\w)|(?<!\w)function(?!\w)|(?<!\w)method(?!\w)|(?<!\w)field(?!\w)|(?<!\w)static(?!\w)|(?<!\w)var(?!\w)|(?<!\w)int(?!\w)|(?<!\w)char(?!\w)|(?<!\w)boolean(?!\w)|(?<!\w)void(?!\w)|(?<!\w)true(?!\w)|(?<!\w)false(?!\w)|(?<!\w)null(?!\w)|(?<!\w)this(?!\w)|(?<!\w)let(?!\w)|(?<!\w)do(?!\w)|(?<!\w)if(?!\w)|(?<!\w)else(?!\w)|(?<!\w)while(?!\w)|(?<!\w)return(?!\w)|[\{\|\}\|\(\|\)\|\[\|\]\|\.\|,\|;\|\+\|\-\|\*\|/\|\&\|\|\|<\|>\|=\|\-]|[0-9]+|"[^"\n]*"|[\w]+
+    
+ 
+ 
+class Square {
+
+   field int x, y;     field int size;  
+    
+   constructor Square new(int Ax, int Ay, int Asize) {
+      let x = Ax;
+      let y = Ay;
+      let size = Asize;
+      do draw();
+      return this;
+   }
+
+    
+   method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }
+
+    
+   method void draw() {
+      do Screen.setColor(true);
+      do Screen.drawRectangle(x, y, x + size, y + size);
+      return;
+   }
+
+    
+   method void erase() {
+      do Screen.setColor(false);
+      do Screen.drawRectangle(x, y, x + size, y + size);
+      return;
+   }
+
+     
+   method void incSize() {
+      if (((y + size) < 254) & ((x + size) < 510)) {
+         do erase();
+         let size = size + 2;
+         do draw();
+      }
+      return;
+   }
+
+    
+   method void decSize() {
+      if (size > 2) {
+         do erase();
+         let size = size - 2;
+         do draw();
+      }
+      return;
+   }
+
+    
+   method void moveUp() {
+      if (y > 1) {
+         do Screen.setColor(false);
+         do Screen.drawRectangle(x, (y + size) - 1, x + size, y + size);
+         let y = y - 2;
+         do Screen.setColor(true);
+         do Screen.drawRectangle(x, y, x + size, y + 1);
+      }
+      return;
+   }
+
+    
+   method void moveDown() {
+      if ((y + size) < 254) {
+         do Screen.setColor(false);
+         do Screen.drawRectangle(x, y, x + size, y + 1);
+         let y = y + 2;
+         do Screen.setColor(true);
+         do Screen.drawRectangle(x, (y + size) - 1, x + size, y + size);
+      }
+      return;
+   }
+
+    
+   method void moveLeft() {
+      if (x > 1) {
+         do Screen.setColor(false);
+         do Screen.drawRectangle((x + size) - 1, y, x + size, y + size);
+         let x = x - 2;
+         do Screen.setColor(true);
+         do Screen.drawRectangle(x, y, x + 1, y + size);
+      }
+      return;
+   }
+
+    
+   method void moveRight() {
+      if ((x + size) < 510) {
+         do Screen.setColor(false);
+         do Screen.drawRectangle(x, y, x + 1, y + size);
+         let x = x + 2;
+         do Screen.setColor(true);
+         do Screen.drawRectangle((x + size) - 1, y, x + size, y + size);
+      }
+      return;
+   }
+}
+
+['class', 'Square', '{', 'field', 'int', 'x', ',', 'y', ';', 'field', 'int', 'size', ';', 'constructor', 'Square', 'new', '(', 'int', 'Ax', ',', 'int', 'Ay', ',', 'int', 'Asize', ')', '{', 'let', 'x', '=', 'Ax', ';', 'let', 'y', '=', 'Ay', ';', 'let', 'size', '=', 'Asize', ';', 'do', 'draw', '(', ')', ';', 'return', 'this', ';', '}', 'method', 'void', 'dispose', '(', ')', '{', 'do', 'Memory', '.', 'deAlloc', '(', 'this', ')', ';', 'return', ';', '}', 'method', 'void', 'draw', '(', ')', '{', 'do', 'Screen', '.', 'setColor', '(', 'true', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', 'y', ',', 'x', '+', 'size', ',', 'y', '+', 'size', ')', ';', 'return', ';', '}', 'method', 'void', 'erase', '(', ')', '{', 'do', 'Screen', '.', 'setColor', '(', 'false', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', 'y', ',', 'x', '+', 'size', ',', 'y', '+', 'size', ')', ';', 'return', ';', '}', 'method', 'void', 'incSize', '(', ')', '{', 'if', '(', '(', '(', 'y', '+', 'size', ')', '<', '254', ')', '&', '(', '(', 'x', '+', 'size', ')', '<', '510', ')', ')', '{', 'do', 'erase', '(', ')', ';', 'let', 'size', '=', 'size', '+', '2', ';', 'do', 'draw', '(', ')', ';', '}', 'return', ';', '}', 'method', 'void', 'decSize', '(', ')', '{', 'if', '(', 'size', '>', '2', ')', '{', 'do', 'erase', '(', ')', ';', 'let', 'size', '=', 'size', '-', '2', ';', 'do', 'draw', '(', ')', ';', '}', 'return', ';', '}', 'method', 'void', 'moveUp', '(', ')', '{', 'if', '(', 'y', '>', '1', ')', '{', 'do', 'Screen', '.', 'setColor', '(', 'false', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', '(', 'y', '+', 'size', ')', '-', '1', ',', 'x', '+', 'size', ',', 'y', '+', 'size', ')', ';', 'let', 'y', '=', 'y', '-', '2', ';', 'do', 'Screen', '.', 'setColor', '(', 'true', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', 'y', ',', 'x', '+', 'size', ',', 'y', '+', '1', ')', ';', '}', 'return', ';', '}', 'method', 'void', 'moveDown', '(', ')', '{', 'if', '(', '(', 'y', '+', 'size', ')', '<', '254', ')', '{', 'do', 'Screen', '.', 'setColor', '(', 'false', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', 'y', ',', 'x', '+', 'size', ',', 'y', '+', '1', ')', ';', 'let', 'y', '=', 'y', '+', '2', ';', 'do', 'Screen', '.', 'setColor', '(', 'true', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', '(', 'y', '+', 'size', ')', '-', '1', ',', 'x', '+', 'size', ',', 'y', '+', 'size', ')', ';', '}', 'return', ';', '}', 'method', 'void', 'moveLeft', '(', ')', '{', 'if', '(', 'x', '>', '1', ')', '{', 'do', 'Screen', '.', 'setColor', '(', 'false', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', '(', 'x', '+', 'size', ')', '-', '1', ',', 'y', ',', 'x', '+', 'size', ',', 'y', '+', 'size', ')', ';', 'let', 'x', '=', 'x', '-', '2', ';', 'do', 'Screen', '.', 'setColor', '(', 'true', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', 'y', ',', 'x', '+', '1', ',', 'y', '+', 'size', ')', ';', '}', 'return', ';', '}', 'method', 'void', 'moveRight', '(', ')', '{', 'if', '(', '(', 'x', '+', 'size', ')', '<', '510', ')', '{', 'do', 'Screen', '.', 'setColor', '(', 'false', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', 'x', ',', 'y', ',', 'x', '+', '1', ',', 'y', '+', 'size', ')', ';', 'let', 'x', '=', 'x', '+', '2', ';', 'do', 'Screen', '.', 'setColor', '(', 'true', ')', ';', 'do', 'Screen', '.', 'drawRectangle', '(', '(', 'x', '+', 'size', ')', '-', '1', ',', 'y', ',', 'x', '+', 'size', ',', 'y', '+', 'size', ')', ';', '}', 'return', ';', '}', '}']
+[('KEYWORD', 'class'), ('IDENTIFIER', 'Square'), ('SYMBOL', '{'), ('KEYWORD', 'field'), ('KEYWORD', 'int'), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ';'), ('KEYWORD', 'field'), ('KEYWORD', 'int'), ('IDENTIFIER', 'size'), ('SYMBOL', ';'), ('KEYWORD', 'constructor'), ('IDENTIFIER', 'Square'), ('IDENTIFIER', 'new'), ('SYMBOL', '('), ('KEYWORD', 'int'), ('IDENTIFIER', 'Ax'), ('SYMBOL', ','), ('KEYWORD', 'int'), ('IDENTIFIER', 'Ay'), ('SYMBOL', ','), ('KEYWORD', 'int'), ('IDENTIFIER', 'Asize'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'let'), ('IDENTIFIER', 'x'), ('SYMBOL', '='), ('IDENTIFIER', 'Ax'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'y'), ('SYMBOL', '='), ('IDENTIFIER', 'Ay'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'size'), ('SYMBOL', '='), ('IDENTIFIER', 'Asize'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'draw'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'return'), ('KEYWORD', 'this'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'dispose'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Memory'), ('SYMBOL', '.'), ('IDENTIFIER', 'deAlloc'), ('SYMBOL', '('), ('KEYWORD', 'this'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'draw'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'true'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'erase'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'false'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'incSize'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'if'), ('SYMBOL', '('), ('SYMBOL', '('), ('SYMBOL', '('), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '&lt;'), ('INT_CONST', '254'), ('SYMBOL', ')'), ('SYMBOL', '&amp;'), ('SYMBOL', '('), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '&lt;'), ('INT_CONST', '510'), ('SYMBOL', ')'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'erase'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'size'), ('SYMBOL', '='), ('IDENTIFIER', 'size'), ('SYMBOL', '+'), ('INT_CONST', '2'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'draw'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'decSize'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'if'), ('SYMBOL', '('), ('IDENTIFIER', 'size'), ('SYMBOL', '&gt;'), ('INT_CONST', '2'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'erase'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'size'), ('SYMBOL', '='), ('IDENTIFIER', 'size'), ('SYMBOL', '-'), ('INT_CONST', '2'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'draw'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'moveUp'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'if'), ('SYMBOL', '('), ('IDENTIFIER', 'y'), ('SYMBOL', '&gt;'), ('INT_CONST', '1'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'false'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('SYMBOL', '('), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '-'), ('INT_CONST', '1'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'y'), ('SYMBOL', '='), ('IDENTIFIER', 'y'), ('SYMBOL', '-'), ('INT_CONST', '2'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'true'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('INT_CONST', '1'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'moveDown'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'if'), ('SYMBOL', '('), ('SYMBOL', '('), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '&lt;'), ('INT_CONST', '254'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'false'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('INT_CONST', '1'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'y'), ('SYMBOL', '='), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('INT_CONST', '2'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'true'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('SYMBOL', '('), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '-'), ('INT_CONST', '1'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'moveLeft'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'if'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', '&gt;'), ('INT_CONST', '1'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'false'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '-'), ('INT_CONST', '1'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'x'), ('SYMBOL', '='), ('IDENTIFIER', 'x'), ('SYMBOL', '-'), ('INT_CONST', '2'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'true'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('INT_CONST', '1'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'method'), ('KEYWORD', 'void'), ('IDENTIFIER', 'moveRight'), ('SYMBOL', '('), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'if'), ('SYMBOL', '('), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '&lt;'), ('INT_CONST', '510'), ('SYMBOL', ')'), ('SYMBOL', '{'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'false'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('INT_CONST', '1'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'let'), ('IDENTIFIER', 'x'), ('SYMBOL', '='), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('INT_CONST', '2'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'setColor'), ('SYMBOL', '('), ('KEYWORD', 'true'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('KEYWORD', 'do'), ('IDENTIFIER', 'Screen'), ('SYMBOL', '.'), ('IDENTIFIER', 'drawRectangle'), ('SYMBOL', '('), ('SYMBOL', '('), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', '-'), ('INT_CONST', '1'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', ','), ('IDENTIFIER', 'x'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ','), ('IDENTIFIER', 'y'), ('SYMBOL', '+'), ('IDENTIFIER', 'size'), ('SYMBOL', ')'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('KEYWORD', 'return'), ('SYMBOL', ';'), ('SYMBOL', '}'), ('SYMBOL', '}')]

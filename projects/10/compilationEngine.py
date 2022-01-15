@@ -2,6 +2,7 @@ class CompilationEngine:
 
   l_decl_subroutine = ["constructor", "method", "function"]
   l_decl_classvar = ["static", "field"]
+  l_statement = ["if", "do", "let", "while", "return"]
 
   def __init__(self, tokenizer, fout): #construct with an already-formed tokenizer, and an already opened file
     self.tok = tokenizer
@@ -92,27 +93,115 @@ class CompilationEngine:
   def compileParameterList(self):
     self.write_nonterm_begin("parameterList")
     while(self.tok.lookAhead()[1] != ")"):
-      self.advance() #consume parameter type
-      self.advance() #consume parameter name
+      self.cadvance() #consume parameter type
+      self.cadvance() #consume parameter name
       if(self.tok.lookAhead()[1] == ","):
-        self.advance() #consume comma and loop around 
+        self.cadvance() #consume comma and loop around 
     self.write_nonterm_end() #note: we leave the ")" as the next token.  we did not consume it.
 
   def compileSubroutineBody(self):
     self.write_nonterm_begin("subroutineBody")
-    self.advance() #consume {
+    self.cadvance() #consume {
     if(self.tok.current_token[1] != "{"):
       print('error: expected { for subroutine body')
     while(self.tok.lookAhead[1] == 'var'):
       self.compileVarDec()
     self.compileStatements()
-    self.advance() #consume }
+    self.cadvance() #consume }
     if(self.tok.current_token[1] != "}"):
       print('error: expected } to end subroutine body')
     self.write_nonterm_end()
 
   def compileVarDec(self):
-    pass
+    self.write_nonterm_begin("varDec")
+    self.cadvance() #consume 'var'
+    self.cadvance() #consume type 
+    self.cadvance() #consume name 
+    while(self.tok.lookAhead[1] == ","): #handles case of list of names
+      self.cadvance() #consume ","
+      self.cadvance() #consume name
+    self.cadvance() #consume ;
+    if(self.tok.current_token[1] != ";"):
+      print('error: expected ; end of compileVarDec')
+    self.write_nonterm_end()
   
-  def compileStatements(self):
+  def compileStatements(self): #statements: statement* ;   statement: let, do , if, while, return
+    self.write_nonterm_begin("statements")
+    while(self.tok.lookAhead[1] in l_statements):
+      if(self.tok.lookAhead[1] == "if"):
+        self.compileIf()
+      if(self.tok.lookAhead[1] == "do"):
+        self.compileDo()
+      if(self.tok.lookAhead[1] == "let"):
+        self.compileLet()
+      if(self.tok.lookAhead[1] == "while"):
+        self.compileWhile()
+      if(self.tok.lookAhead[1] == "return"):
+        self.compileReturn()
+    self.write_nonterm_end()
+
+  def compileIf(self):
+    self.write_nonterm_begin("ifStatement")
+    self.cadvance() #consume if
+    self.cadvance() #consume (
+    self.compileExpression()
+    self.cadvance() #consume )
+    self.cadvance() #consume {
+    self.compileStatements()
+    self.cadvance() #consume }
+    if(self.tok.lookAhead[1] == "else"):
+      self.cadvance() #consume the else
+      self.cadvance() #consume the {
+      self.compileStatements()
+      self.cadvance() #consume the }
+    self.write_nonterm_end()
+
+  def compileDo(self):
+    self.write_nonterm_begin("doStatement")
+    self.cadvance() # consume do
+ 
+    #subroutine call:
+    self.cadvance() #consume subroutine name OR class/var name (constructor/method)
+    if(self.tok.lookAhead[1] == "."): #it is a class/var.constructor/method call
+      self.cadvance() # consume the . symbol
+      self.cadvance() # consume the subroutine name 
+    self.cadvance() #consume (
+    self.compileExpressionList()
+    self.cadvance() #consume )
+    #end subroutine call
+ 
+    self.advance() # consume ;
+    if(self.tok.current_token[1] != ";"):
+      print('error: expected ; end of compileDo')
+    self.write_nonterm_end()
+
+  def compileLet(self):
+    self.write_nonterm_begin("letStatement")
+    self.cadvance() #consume let
+    self.cadvance() #consume variable name
+    if(self.tok.lookAhead[1] == "["): # it is an array index
+      self.cadvance() #consume the [
+      self.compileExpression()
+      self.cadvance() #consume the ]
+    self.cadvance() #consume the =
+    if(self.tok.current_token[1] != "="):
+      print('error: expected "=" in Let statement')
+    self.compileExpression()
+    self.cadvance() #consume ;
+    if(self.tok.current_token[1] != ";"):
+      print('error: expected ; end of compileLet')
+
+  def compileWhile(self):
+    pass
+ 
+  def compileReturn(self):
+    pass
+
+  def compileExpressionList(self):
+    pass
+
+  def compileExpression(self):
+    pass
+
+  def compileTerm(self):
     pass

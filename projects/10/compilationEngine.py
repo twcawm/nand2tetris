@@ -204,8 +204,8 @@ class CompilationEngine:
     self.cadvance() #consume {
     self.compileStatements()
     self.cadvance() #consume }
-    if(self.tok.current_token[1] != ";"):
-      print('error: expected ; end of compileWhile')
+    if(self.tok.current_token[1] != "}"):
+      print('error: expected } end of compileWhile')
     self.write_nonterm_end()
  
   #todo: revise the way we're testing for "next thing is an expression" here.

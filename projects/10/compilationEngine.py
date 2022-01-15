@@ -5,6 +5,8 @@ class CompilationEngine:
   l_statement = ["if", "do", "let", "while", "return"]
 
   l_unary = ['-','~']
+  l_binary = ['+', '-', '*', '/', '&', '|', '<', '>', '=', '&lt;', '&gt;', '&amp;']
+    #had to fix this to include the escaped versions since we do that in tokenizer
   l_kwd_const = ['true','false','null','this']
 
   def __init__(self, tokenizer, fout): #construct with an already-formed tokenizer, and an already opened file
@@ -247,9 +249,51 @@ class CompilationEngine:
   def compileExpression(self):
     self.write_nonterm_begin("expression")
     self.compileTerm()
+    '''
+    while(next thing is binary operator):
+      advance to get the operator
+      compileTerm
+    '''
+    while(self.tok.lookAhead()[1] in self.l_binary):
+      self.cadvance() #consume the binary op
+      self.compileTerm()
     self.write_nonterm_end()
 
   def compileTerm(self):
     self.write_nonterm_begin("term")
-    self.cadvance() #consume the placeholder
+
+    if(self.tok.lookAhead()[1] in self.l_unary):
+      self.cadvance() #consume unary operator
+      self.compileTerm() #recurse to term
+
+    elif(self.tok.lookAhead()[1] == '('): #parenthesized term
+      self.cadvance()
+      self.compileExpression()
+      self.cadvance() #consume closing )
+      if(self.tok.current_token[1] != ")"):
+        print('error in compileTerm: expected ) to close term')
+
+    elif(self.tok.lookAhead()[0] in ["INT_CONST","STRING_CONST"]
+         or self.tok.lookAhead()[1] in self.l_kwd_const): #literal term
+      self.cadvance() #consume the literal/kwd constant
+
+    elif(self.tok.lookAhead()[0] == "IDENTIFIER"):
+      self.cadvance() #consume identifier name
+      nextVal = self.tok.lookAhead()[1] #have to lookahead here
+      if(nextVal == '.'): #is a subroutine call (name) (or var access? it might just only be subroutine)
+        #update: after reviewing jack grammar, there are NO PUBLIC static or field vars!
+        #so the only thing you can do with class instances is call their members.  can't access vars with .
+        self.cadvance() #consume .
+        self.cadvance() #consume subroutine name
+        self.cadvance() #consume (
+        self.compileExpressionList() 
+        self.cadvance() #consume )
+      elif(nextVal == '('): #subroutine call
+        self.cadvance() #consume (
+        self.compileExpressionList()
+        self.cadvance() #consume )
+      elif(nextVal == '['): #array index expr
+        self.cadvance() #consume [
+        self.compileExpression()
+        self.cadvance() #consume ]
     self.write_nonterm_end()

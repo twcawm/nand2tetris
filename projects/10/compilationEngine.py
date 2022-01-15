@@ -4,6 +4,9 @@ class CompilationEngine:
   l_decl_classvar = ["static", "field"]
   l_statement = ["if", "do", "let", "while", "return"]
 
+  l_unary = ['-','~']
+  l_kwd_const = ['true','false','null','this']
+
   def __init__(self, tokenizer, fout): #construct with an already-formed tokenizer, and an already opened file
     self.tok = tokenizer
     self.fout = fout
@@ -18,11 +21,11 @@ class CompilationEngine:
   def write_nonterm_end(self):
     element = self.element_stack.pop()
     self.decrease_indents()
-    self.outputFile.write(self.indents + "</" + element + ">\n")
+    self.fout.write(self.indents + "</" + element + ">\n")
   def write_terminal(self):
-    tokenType, tokenValue = tok.current_token #current_token is a type of tokentype, value
-    tokenType = JackTokenizer.d_lex[tokenType] #get the XML form
-    if(token[0] == "stringConstant"): #special case for string constant, annoying.
+    tokenType, tokenValue = self.tok.current_token #current_token is a type of tokentype, value
+    tokenType = self.tok.d_lex[tokenType] #get the XML form
+    if(tokenType == "stringConstant"): #special case for string constant, annoying.
       tokenValue = tokenValue[1:-1] #get rid of the '"'
     self.fout.write(self.indents + "<" + tokenType + "> " + tokenValue + " </" + tokenType + ">\n")
  
@@ -48,14 +51,14 @@ class CompilationEngine:
     if(self.tok.current_token[1] != "{"):
       print('error: expected {')
     
-    while(self.tokenizer.hasMoreTokens() and (self.tok.lookAhead()[1] in l_decl_classvar)): #if next token begins class var declaration
+    while(self.tok.hasMoreTokens() and (self.tok.lookAhead()[1] in self.l_decl_classvar)): #if next token begins class var declaration
       self.compileClassVarDec()
-    while(self.tokenizer.hasMoreTokens() and (self.tok.lookAhead()[1] in l_decl_subroutine)): #if next token begins class var declaration
+    while(self.tok.hasMoreTokens() and (self.tok.lookAhead()[1] in self.l_decl_subroutine)): #if next token begins class var declaration
       self.compileSubroutine()
 
     self.cadvance()
     if(self.tok.current_token[1] != "}"):
-      print('error: expected }')
+      print('error: expected } in compileClass')
     self.write_nonterm_end()
     self.fout.close() #we are done
    
@@ -63,7 +66,7 @@ class CompilationEngine:
   def compileClassVarDec(self):
     self.write_nonterm_begin("classVarDec")
     self.cadvance() #"static" or "field"
-    if(self.tok.current_token[1] not in l_decl_classvar):
+    if(self.tok.current_token[1] not in self.l_decl_classvar):
       print('error: expected "static" or "field"') #in retrospect this shouldn't be necessary since we only call this when this condition is satisfied.  could delete later.
     self.cadvance() #var type - we could add better error checking later.
     self.cadvance() #var name
@@ -72,9 +75,9 @@ class CompilationEngine:
       self.cadvance() # consume name
       if(self.tok.current_token[0] != "IDENTIFIER"):
         print('error: expected identifier (class variable name)')
-      self.cadvance() # consume ";"
-      if(self.tok.current_token[0] != ";"):
-        print('error: expected ;')
+    self.cadvance() # consume ";"
+    if(self.tok.current_token[1] != ";"):
+      print('error: expected ; but got ' + self.tok-current_token[1])
     self.write_nonterm_end()
 
   def compileSubroutine(self):
@@ -83,8 +86,8 @@ class CompilationEngine:
     self.cadvance() #consume type or 'void'
     self.cadvance() #consume subroutine name 
     self.cadvance() #consume (
-    if(self.tok.current_token[0] != "("):
-      print('error: expected (')
+    if(self.tok.current_token[1] != "("):
+      print('error: expected ( in compileSubroutine')
     self.compileParameterList()
     self.cadvance() #consume ) 
     self.compileSubroutineBody() #separate this out as a function for a bit of sanity
@@ -104,7 +107,7 @@ class CompilationEngine:
     self.cadvance() #consume {
     if(self.tok.current_token[1] != "{"):
       print('error: expected { for subroutine body')
-    while(self.tok.lookAhead[1] == 'var'):
+    while(self.tok.lookAhead()[1] == 'var'):
       self.compileVarDec()
     self.compileStatements()
     self.cadvance() #consume }
@@ -117,7 +120,7 @@ class CompilationEngine:
     self.cadvance() #consume 'var'
     self.cadvance() #consume type 
     self.cadvance() #consume name 
-    while(self.tok.lookAhead[1] == ","): #handles case of list of names
+    while(self.tok.lookAhead()[1] == ","): #handles case of list of names
       self.cadvance() #consume ","
       self.cadvance() #consume name
     self.cadvance() #consume ;
@@ -127,16 +130,16 @@ class CompilationEngine:
   
   def compileStatements(self): #statements: statement* ;   statement: let, do , if, while, return
     self.write_nonterm_begin("statements")
-    while(self.tok.lookAhead[1] in l_statements):
-      if(self.tok.lookAhead[1] == "if"):
+    while(self.tok.lookAhead()[1] in self.l_statement):
+      if(self.tok.lookAhead()[1] == "if"):
         self.compileIf()
-      if(self.tok.lookAhead[1] == "do"):
+      if(self.tok.lookAhead()[1] == "do"):
         self.compileDo()
-      if(self.tok.lookAhead[1] == "let"):
+      if(self.tok.lookAhead()[1] == "let"):
         self.compileLet()
-      if(self.tok.lookAhead[1] == "while"):
+      if(self.tok.lookAhead()[1] == "while"):
         self.compileWhile()
-      if(self.tok.lookAhead[1] == "return"):
+      if(self.tok.lookAhead()[1] == "return"):
         self.compileReturn()
     self.write_nonterm_end()
 
@@ -149,7 +152,7 @@ class CompilationEngine:
     self.cadvance() #consume {
     self.compileStatements()
     self.cadvance() #consume }
-    if(self.tok.lookAhead[1] == "else"):
+    if(self.tok.lookAhead()[1] == "else"):
       self.cadvance() #consume the else
       self.cadvance() #consume the {
       self.compileStatements()
@@ -162,7 +165,7 @@ class CompilationEngine:
  
     #subroutine call:
     self.cadvance() #consume subroutine name OR class/var name (constructor/method)
-    if(self.tok.lookAhead[1] == "."): #it is a class/var.constructor/method call
+    if(self.tok.lookAhead()[1] == "."): #it is a class/var.constructor/method call
       self.cadvance() # consume the . symbol
       self.cadvance() # consume the subroutine name 
     self.cadvance() #consume (
@@ -170,7 +173,7 @@ class CompilationEngine:
     self.cadvance() #consume )
     #end subroutine call
  
-    self.advance() # consume ;
+    self.cadvance() # consume ;
     if(self.tok.current_token[1] != ";"):
       print('error: expected ; end of compileDo')
     self.write_nonterm_end()
@@ -179,7 +182,7 @@ class CompilationEngine:
     self.write_nonterm_begin("letStatement")
     self.cadvance() #consume let
     self.cadvance() #consume variable name
-    if(self.tok.lookAhead[1] == "["): # it is an array index
+    if(self.tok.lookAhead()[1] == "["): # it is an array index
       self.cadvance() #consume the [
       self.compileExpression()
       self.cadvance() #consume the ]
@@ -190,18 +193,63 @@ class CompilationEngine:
     self.cadvance() #consume ;
     if(self.tok.current_token[1] != ";"):
       print('error: expected ; end of compileLet')
+    self.write_nonterm_end()
 
   def compileWhile(self):
-    pass
+    self.write_nonterm_begin("whileStatement")
+    self.cadvance() #consume the 'while'
+    self.cadvance() #consume (
+    self.compileExpression()
+    self.cadvance() #consume )
+    self.cadvance() #consume {
+    self.compileStatements()
+    self.cadvance() #consume }
+    if(self.tok.current_token[1] != ";"):
+      print('error: expected ; end of compileWhile')
+    self.write_nonterm_end()
  
+  #todo: revise the way we're testing for "next thing is an expression" here.
+  # probably turn it into a function. 
   def compileReturn(self):
-    pass
+    self.write_nonterm_begin("returnStatement")
+    self.cadvance()
+    while(self.nextIsTerm()):
+      self.compileExpression()
+    self.cadvance() #consume ;
+    if(self.tok.current_token[1] != ";"):
+      print('error: expected ; end of compileReturn')
+    self.write_nonterm_end()
+
+  def nextIsTerm(self): #figures out if next token is a term
+    #since expression := term (op term)* in the jack grammar, this basically defines isExpr too.
+    nextType, nextVal = self.tok.lookAhead()
+    #print("in nextIsTerm")
+    #print("nextType, nextVal is "+nextType+" "+ nextVal)
+    if(nextType in ["INT_CONST","STRING_CONST","IDENTIFIER"] or
+      nextVal == "(" or nextVal in self.l_unary or nextVal in self.l_kwd_const):
+      #( case covers '(' expression ')'
+      #print("returning True")
+      return True
+    else:
+      #print("returning False")
+      return False
 
   def compileExpressionList(self):
-    pass
+    self.write_nonterm_begin("expressionList")
+    if(self.nextIsTerm()):
+      self.compileExpression()
+    while(self.tok.lookAhead()[1] == ","):
+      self.cadvance() #consume ,
+      self.compileExpression()
+    self.write_nonterm_end()
 
+  #I might be able to apply the compiler without expr or term to the expressionless syntax.  let's try.
   def compileExpression(self):
-    pass
+    self.write_nonterm_begin("expression")
+    self.compileTerm()
+    self.write_nonterm_end()
 
   def compileTerm(self):
-    pass
+    self.write_nonterm_begin("term")
+    self.cadvance() #consume the placeholder
+    self.write_nonterm_end()

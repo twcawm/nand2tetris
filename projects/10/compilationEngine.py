@@ -63,7 +63,7 @@ class CompilationEngine:
     self.write_nonterm_begin("classVarDec")
     self.cadvance() #"static" or "field"
     if(self.tok.current_token[1] not in l_decl_classvar):
-      print('error: expected "static" or "field"')
+      print('error: expected "static" or "field"') #in retrospect this shouldn't be necessary since we only call this when this condition is satisfied.  could delete later.
     self.cadvance() #var type - we could add better error checking later.
     self.cadvance() #var name
     while(self.tok.lookAhead()[1] == ","):
@@ -75,5 +75,44 @@ class CompilationEngine:
       if(self.tok.current_token[0] != ";"):
         print('error: expected ;')
     self.write_nonterm_end()
-    
+
+  def compileSubroutine(self):
+    self.write_nonterm_begin("subroutineDec")
+    self.cadvance() #consume  "constructor", "method", "function"
+    self.cadvance() #consume type or 'void'
+    self.cadvance() #consume subroutine name 
+    self.cadvance() #consume (
+    if(self.tok.current_token[0] != "("):
+      print('error: expected (')
+    self.compileParameterList()
+    self.cadvance() #consume ) 
+    self.compileSubroutineBody() #separate this out as a function for a bit of sanity
+    self.write_nonterm_end()
       
+  def compileParameterList(self):
+    self.write_nonterm_begin("parameterList")
+    while(self.tok.lookAhead()[1] != ")"):
+      self.advance() #consume parameter type
+      self.advance() #consume parameter name
+      if(self.tok.lookAhead()[1] == ","):
+        self.advance() #consume comma and loop around 
+    self.write_nonterm_end() #note: we leave the ")" as the next token.  we did not consume it.
+
+  def compileSubroutineBody(self):
+    self.write_nonterm_begin("subroutineBody")
+    self.advance() #consume {
+    if(self.tok.current_token[1] != "{"):
+      print('error: expected { for subroutine body')
+    while(self.tok.lookAhead[1] == 'var'):
+      self.compileVarDec()
+    self.compileStatements()
+    self.advance() #consume }
+    if(self.tok.current_token[1] != "}"):
+      print('error: expected } to end subroutine body')
+    self.write_nonterm_end()
+
+  def compileVarDec(self):
+    pass
+  
+  def compileStatements(self):
+    pass

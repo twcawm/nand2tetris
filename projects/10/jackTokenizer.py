@@ -70,8 +70,14 @@ class JackTokenizer:
   def hasMoreTokens(self):
     return self.current_index < (len(self.tokens) - 1)
 
+  def lookAhead(self):
+    if self.hasMoreTokens():
+      return self.tokens[self.current_index + 1]
+    else:
+      return None
+
   def advance(self):
-    if(not hasMoreTokens):
+    if(not self.hasMoreTokens()):
       print("error: advance() called without any more tokens left")
     else:
       self.current_index = self.current_index + 1

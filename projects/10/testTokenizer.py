@@ -1,4 +1,5 @@
 import jackTokenizer
+import compilationEngine
 
 tok = jackTokenizer.JackTokenizer("ArrayTest/Main.jack")
 

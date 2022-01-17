@@ -24,8 +24,7 @@ class VMWriter:
     self.fout.write("call " + name + " " + str(nArgs) + "\n")
   
   def writeFunction(self, name, nLocals):
-    self.fout.write("function " + name + " " + str(nArgs) + "\n")
+    self.fout.write("function " + name + " " + str(nLocals) + "\n")
 
-  def writeReturn()
+  def writeReturn(self):
     self.fout.write("return\n")
-    pass

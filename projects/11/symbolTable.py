@@ -44,7 +44,7 @@ class SymbolTable:
       return self.count_var
   '''
   def varCount(self, id_kind):
-    if(self.current_scope = "subroutine"):
+    if(self.current_scope == "subroutine"):
       l_globals = [meta for (varname, meta) in self.subroutine_scope.items() if meta[0] == id_kind]
       return len(l_globals)
     else:
@@ -54,7 +54,7 @@ class SymbolTable:
     l_globals = [meta for (varname, meta) in self.class_scope.items() if meta[0] == id_kind]
     return len(l_globals)
 
-  def kindOf(id_name): #in a more advanced language this would be a nested search starting from "current scope".  
+  def kindOf(self,id_name): #in a more advanced language this would be a nested search starting from "current scope".  
                        #but here, we only ever have 2 scopes maximum (subroutine and class)
     if(current_scope == "subroutine" and id_name in self.subroutine_scope):
       return self.subroutine_scope[id_name][0] #only look in subroutine if the current scope is subroutine.
@@ -62,19 +62,19 @@ class SymbolTable:
     elif(id_name in self.class_scope):
       return self.class_scope[id_name][0]
  
-  def typeOf(id_name): 
+  def typeOf(self,id_name): 
     if(current_scope == "subroutine" and id_name in self.subroutine_scope):
       return self.subroutine_scope[id_name][1] #only look in subroutine if the current scope is subroutine.
     elif(id_name in self.class_scope):
       return self.class_scope[id_name][1]
 
-  def indexOf(id_name): 
+  def indexOf(self,id_name): 
     if(current_scope == "subroutine" and id_name in self.subroutine_scope):
       return self.subroutine_scope[id_name][2] #only look in subroutine if the current scope is subroutine.
     elif(id_name in self.class_scope):
       return self.class_scope[id_name][2]
 
-  def set_scope_class():
+  def set_scope_class(self):
     self.current_scope = "class"
-  def set_scope_subroutine():
+  def set_scope_subroutine(self):
     self.current_scope = "subroutine"

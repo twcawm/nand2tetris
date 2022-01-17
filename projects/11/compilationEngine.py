@@ -1,4 +1,5 @@
 import vmWriter
+import symbolTable
 
 class CompilationEngine:
 
@@ -57,7 +58,7 @@ class CompilationEngine:
     self.cadvance() #consume "class"
     if(self.tok.current_token[1] != "class"):
       print('error: expected "class" as first token in compileClass') #rudimentary error handling
-    self.class_name = self.cadvance() #capture class name
+    self.class_name = self.cadvance()[1] #capture class name
     if(self.tok.current_token[0] != "IDENTIFIER"):
       print('error: expected identifier after "class"')
     self.cadvance()
@@ -99,8 +100,9 @@ class CompilationEngine:
     #self.write_nonterm_begin("subroutineDec")
     ftype = self.cadvance()[1] #consume  "constructor", "method", "function"
     self.cadvance() #consume return type or 'void'
+    #print("self.class_name is " + str(type(self.class_name)))
     self.subroutine_name = self.class_name + "." + self.cadvance()[1] #consume subroutine name 
-    self.symbol_table.startSubroutine(self.subroutine_name)
+    self.symbol_table.startSubroutine()
     self.symbol_table.set_scope_subroutine() #ensure symbol table scope is set to 'subroutine'
     self.cadvance() #consume (
     if(self.tok.current_token[1] != "("):
@@ -139,7 +141,7 @@ class CompilationEngine:
     self.symbol_table.set_scope_class() #exit subroutine scope
     #self.write_nonterm_end()
 
-  def load_pointer(self, fype):
+  def load_pointer(self, ftype):
     if(ftype == "method"): #code for setting "this" to refer to (hold the address of) the passed object
       self.vm_writer.writePush("argument", 0)
       self.vm_writer.writePop("pointer", 0)
@@ -275,7 +277,7 @@ class CompilationEngine:
       print('error: expected ; end of compileLet')
     #self.write_nonterm_end()
 
-  def compileArrayIndex(self, vname)
+  def compileArrayIndex(self, vname):
     d_fullnames = {"var":"local", "arg":"argument"}
     if((self.symbol_table.current_scope == "subroutine" and vname in self.symbol_table.subroutine_scope) or
          (vname in self.symbol_table.class_scope)): #if vname in current scope
@@ -350,7 +352,7 @@ class CompilationEngine:
       self.cadvance() #consume ,
       self.compileExpression()
       count_for_locals += 1
-    return counter
+    return count_for_locals
     #self.write_nonterm_end()
 
   #I might be able to apply the compiler without expr or term to the expressionless syntax.  let's try.

@@ -56,20 +56,20 @@ class SymbolTable:
 
   def kindOf(self,id_name): #in a more advanced language this would be a nested search starting from "current scope".  
                        #but here, we only ever have 2 scopes maximum (subroutine and class)
-    if(current_scope == "subroutine" and id_name in self.subroutine_scope):
+    if(self.current_scope == "subroutine" and id_name in self.subroutine_scope):
       return self.subroutine_scope[id_name][0] #only look in subroutine if the current scope is subroutine.
         #(not sure if checking that is needed or not, but better to be safe
     elif(id_name in self.class_scope):
       return self.class_scope[id_name][0]
  
   def typeOf(self,id_name): 
-    if(current_scope == "subroutine" and id_name in self.subroutine_scope):
+    if(self.current_scope == "subroutine" and id_name in self.subroutine_scope):
       return self.subroutine_scope[id_name][1] #only look in subroutine if the current scope is subroutine.
     elif(id_name in self.class_scope):
       return self.class_scope[id_name][1]
 
   def indexOf(self,id_name): 
-    if(current_scope == "subroutine" and id_name in self.subroutine_scope):
+    if(self.current_scope == "subroutine" and id_name in self.subroutine_scope):
       return self.subroutine_scope[id_name][2] #only look in subroutine if the current scope is subroutine.
     elif(id_name in self.class_scope):
       return self.class_scope[id_name][2]

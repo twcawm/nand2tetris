@@ -159,7 +159,7 @@ class CompilationEngine:
     self.symbol_table.define(vname, vtype, vkind)
     while(self.tok.lookAhead()[1] == ","): #handles case of list of names
       self.cadvance() #consume ","
-      vname = self.cadvance() #consume name
+      vname = self.cadvance()[1] #consume name
       self.symbol_table.define(vname, vtype, vkind) #same type & kind in same decl list
     self.cadvance() #consume ;
     if(self.tok.current_token[1] != ";"):
@@ -264,14 +264,14 @@ class CompilationEngine:
     self.cadvance() #consume the =
     if(self.tok.current_token[1] != "="):
       print('error: expected "=" in Let statement')
-    self.compileExpression()
+    self.compileExpression() 
     if(is_array):
       self.vm_writer.writePop("temp",0)
       self.vm_writer.writePop("pointer",1)
       self.vm_writer.writePush("temp", 0)
       self.vm_writer.writePop("that", 0)
     else:
-      self.write_pop(vname)
+      self.write_pop(vname) #pop the expression value into the var
     self.cadvance() #consume ;
     if(self.tok.current_token[1] != ";"):
       print('error: expected ; end of compileLet')
@@ -479,6 +479,11 @@ class CompilationEngine:
           if(self.symbol_table.kindOf(iname) == "static"):
             self.vm_writer.writePush("static", self.symbol_table.indexOf(iname))
           else:
+            print("in compileTerm, varname is " + iname +", symtabs are: ")
+            print("subroutine: ")
+            print(self.symbol_table.subroutine_scope)
+            print("class: ")
+            print(self.symbol_table.class_scope)
             self.vm_writer.writePush("this", self.symbol_table.indexOf(iname))
 
       
@@ -500,7 +505,7 @@ class CompilationEngine:
       else:
         self.vm_writer.writePush("this", self.symbolTable.indexOf(name))
 
-  def write_pop(self, name, subname): #dispatches pop writes on kindOf
+  def write_pop(self, name): #dispatches pop writes on kindOf
     #if name is in current scope:
     if((self.symbol_table.current_scope == "subroutine" and name in self.symbol_table.subroutine_scope) or
       (name in self.symbol_table.class_scope)):
@@ -512,4 +517,4 @@ class CompilationEngine:
       if(self.symbol_table.kindOf(name) == "static"):
         self.vm_writer.writePop("static", self.symbol_table.indexOf(name))
       else:
-        self.vm_writer.writePop("this", self.symbolTable.indexOf(name))
+        self.vm_writer.writePop("this", self.symbol_table.indexOf(name))

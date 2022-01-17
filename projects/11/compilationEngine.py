@@ -443,8 +443,8 @@ class CompilationEngine:
         #so the only thing you can do with class instances is call their members.  can't access vars with .
         self.cadvance() #consume .
         sub_name = self.cadvance()[1] #consume subroutine name
-        if((self.symbol_table.current_scope == "subroutine" and sub_name in self.symbol_table.subroutine_scope) or
-           (sub_name in self.symbol_table.class_scope)):
+        if((self.symbol_table.current_scope == "subroutine" and iname in self.symbol_table.subroutine_scope) or
+           (iname in self.symbol_table.class_scope)):
           #if the name is in the current scope
           self.write_push(iname, sub_name) 
           iname = self.symbol_table.typeOf(iname) + "." + sub_name #case of variable: classname.method()

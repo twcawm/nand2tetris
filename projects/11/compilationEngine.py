@@ -165,7 +165,7 @@ class CompilationEngine:
     #self.write_nonterm_end()
   
   def compileStatements(self): #statements: statement* ;   statement: let, do , if, while, return
-    self.write_nonterm_begin("statements")
+    #self.write_nonterm_begin("statements")
     while(self.tok.lookAhead()[1] in self.l_statement):
       if(self.tok.lookAhead()[1] == "if"):
         self.compileIf()
@@ -177,7 +177,7 @@ class CompilationEngine:
         self.compileWhile()
       if(self.tok.lookAhead()[1] == "return"):
         self.compileReturn()
-    self.write_nonterm_end()
+    #self.write_nonterm_end()
 
   def compileIf(self): #there are a few way of ordering the blocks.  we do it here a different way than the book does.
     #self.write_nonterm_begin("ifStatement")
@@ -269,7 +269,7 @@ class CompilationEngine:
       self.vm_writer.writePush("temp", 0)
       self.vm_writer.writePop("that", 0)
     else:
-      self.writePop(vname)
+      self.write_pop(vname)
     self.cadvance() #consume ;
     if(self.tok.current_token[1] != ";"):
       print('error: expected ; end of compileLet')
@@ -355,7 +355,7 @@ class CompilationEngine:
 
   #I might be able to apply the compiler without expr or term to the expressionless syntax.  let's try.
   def compileExpression(self):
-    self.write_nonterm_begin("expression")
+    #self.write_nonterm_begin("expression")
     self.compileTerm()
     '''
     while(next thing is binary operator):
@@ -363,16 +363,39 @@ class CompilationEngine:
       compileTerm
     '''
     while(self.tok.lookAhead()[1] in self.l_binary):
-      self.cadvance() #consume the binary op
+      bop = self.cadvance()[1] #consume the binary op
       self.compileTerm()
-    self.write_nonterm_end()
+      if(bop == "+"):
+        self.vm_writer.writeArithmetic("add")
+      elif(bop == "-"):
+        self.vm_writer.writeArithmetic("sub")
+      elif(bop == "*"):
+        self.vm_writer.writeCall("Math.multiply", 2)
+      elif(bop == "/"):
+        self.vm_writer.writeCall("Math.divide", 2)
+      elif(bop == "&"):
+        self.vm_writer.writeArithmetic("and")
+      elif(bop == "|"):
+        self.vm_writer.writeArithmetic("or")
+      elif(bop == "<"):
+        self.vm_writer.writeArithmetic("lt")
+      elif(bop == ">"):
+        self.vm_writer.writeArithmetic("gt")
+      elif(bop == "="):
+        self.vm_writer.writeArithmetic("eq")
+    #self.write_nonterm_end()
 
   def compileTerm(self):
-    self.write_nonterm_begin("term")
+    #self.write_nonterm_begin("term")
 
+    isArray = False #track whether we get a [
     if(self.tok.lookAhead()[1] in self.l_unary):
-      self.cadvance() #consume unary operator
+      uop = self.cadvance()[1] #consume unary operator
       self.compileTerm() #recurse to term
+      if(uop == "-"):
+        self.vm_writer.writeArithmetic("neg") 
+      elif(uop == "~"):
+        self.vm_writer.writeArithmetic("not")
 
     elif(self.tok.lookAhead()[1] == '('): #parenthesized term
       self.cadvance()
@@ -381,27 +404,110 @@ class CompilationEngine:
       if(self.tok.current_token[1] != ")"):
         print('error in compileTerm: expected ) to close term')
 
-    elif(self.tok.lookAhead()[0] in ["INT_CONST","STRING_CONST"]
-         or self.tok.lookAhead()[1] in self.l_kwd_const): #literal term
-      self.cadvance() #consume the literal/kwd constant
+    elif(self.tok.lookAhead()[0] in ["INT_CONST"]): #have to separate int and string constants now!
+      val = self.cadvance()[1] #consume integer val
+      self.vm_writer.writePush('constant', val) #put it on the stack
+
+    elif(self.tok.lookAhead()[0] in ["STRING_CONST"]): #have to separate int and string constants now!
+      val = self.cadvance()[1] #consume string
+      self.vm_writer.writePush('constant',len(val)) #this is the convention from the book, handling string const
+      self.vm_writer.writeCall('String.new', 1)
+      for vchar in val:
+        self.vm_writer.writePush('constant', ord(vchar)) #ord gives the unicode int of the char
+        self.vm_writer.writeCall('String.appendChar', 2) #the 2 arguments are the string itself and the char
+
+    elif(self.tok.lookAhead()[1] in self.l_kwd_const): #literal term: true, false, null, this.
+      val = self.cadvance()[1] #consume the literal/kwd constant
+      if(val == "this"):
+        self.vm_writer.writePush("pointer",0)
+      else:
+        self.vm_writer.writePush("constant",0) #null and false are encoded as 0 on the stack
+        if(val == "true"):
+          self.vm_writer.writeArithmetic("not") #puts "not 0" onto the stack (-1) which is encoded as True...
 
     elif(self.tok.lookAhead()[0] == "IDENTIFIER"):
-      self.cadvance() #consume identifier name
+      count_locals = 0  
+      is_array = False
+      iname = self.cadvance()[1] #consume identifier name
       nextVal = self.tok.lookAhead()[1] #have to lookahead here
-      if(nextVal == '.'): #is a subroutine call (name) (or var access? it might just only be subroutine)
-        #update: after reviewing jack grammar, there are NO PUBLIC static or field vars!
-        #so the only thing you can do with class instances is call their members.  can't access vars with .
-        self.cadvance() #consume .
-        self.cadvance() #consume subroutine name
-        self.cadvance() #consume (
-        self.compileExpressionList() 
-        self.cadvance() #consume )
-      elif(nextVal == '('): #subroutine call
-        self.cadvance() #consume (
-        self.compileExpressionList()
-        self.cadvance() #consume )
-      elif(nextVal == '['): #array index expr
+      if(nextVal == '['): #array index expr
+        is_array = True
         self.cadvance() #consume [
         self.compileExpression()
         self.cadvance() #consume ]
-    self.write_nonterm_end()
+        self.compileArrayIndex(iname)
+      if(nextVal == '.'): #is a subroutine call
+        #update: after reviewing jack grammar, there are NO PUBLIC static or field vars!
+        #so the only thing you can do with class instances is call their members.  can't access vars with .
+        self.cadvance() #consume .
+        sub_name = self.cadvance()[1] #consume subroutine name
+        if((self.symbol_table.current_scope == "subroutine" and sub_name in self.symbol_table.subroutine_scope) or
+           (sub_name in self.symbol_table.class_scope)):
+          #if the name is in the current scope
+          self.write_push(iname, sub_name) 
+          iname = self.symbol_table.typeOf(iname) + "." + sub_name #case of variable: classname.method()
+          count_locals += 1
+        else:
+          iname = iname + "." + sub_name #note: this is all identical to what's in compileDo
+        
+        self.cadvance() #consume (
+        count_locals += self.compileExpressionList() 
+        self.cadvance() #consume )
+        self.vm_writer.writeCall(iname, count_locals)
+      elif(nextVal == '('): #subroutine call
+        count_locals += 1
+        self.vm_writer.writePush('pointer', 0)
+        self.cadvance() #consume (
+        count_locals += self.compileExpressionList()
+        self.cadvance() #consume )
+        self.vm_writer.writeCall(self.class_name + "." + iname, count_locals)
+
+      else:
+        if(is_array): #this logic structure is ugly; we have 1 initial if, then an if-elif-else which depends on that if sequentially... might need to refactor this later.  it matters iff there are other terms after the array is hit somehow.
+          self.vm_writer.writePop('pointer', 1)
+          self.vm_writer.writePush('that', 0)
+#the following section is begging to be refactored to be more pretty...
+        elif((self.symbol_table.current_scope == "subroutine" and iname in self.symbol_table.subroutine_scope) or
+           (iname in self.symbol_table.class_scope)):
+          if(self.symbol_table.kindOf(iname) == "var"):
+            self.vm_writer.writePush("local", self.symbol_table.indexOf(iname))
+          elif(self.symbol_table.kindOf(iname) == "arg"):
+            self.vm_writer.writePush("argument", self.symbol_table.indexOf(iname))
+        else:
+          if(self.symbol_table.kindOf(iname) == "static"):
+            self.vm_writer.writePush("static", self.symbol_table.indexOf(iname))
+          else:
+            self.vm_writer.writePush("this", self.symbol_table.indexOf(iname))
+
+      
+    #self.write_nonterm_end()
+
+  #should refactor the following - I think I might even have a repetition of the below logic somewhere above.  for now I leave it alone. It is very late.
+  #LOOK INTO REMOVING subname FROM THIS: it is not used!!
+  def write_push(self, name, subname): #dispatches push writes on kindOf
+    #if name is in current scope:
+    if((self.symbol_table.current_scope == "subroutine" and name in self.symbol_table.subroutine_scope) or
+      (name in self.symbol_table.class_scope)):
+      if(self.symbol_table.kindOf(name) == "var"):
+        self.vm_writer.writePush("local", self.symbol_table.indexOf(name))
+      elif(self.symbol_table.kindOf(name) == "arg"):
+        self.vm_writer.writePush("argument", self.symbol_table.indexOf(name))
+    else:
+      if(self.symbol_table.kindOf(name) == "static"):
+        self.vm_writer.writePush("static", self.symbol_table.indexOf(name))
+      else:
+        self.vm_writer.writePush("this", self.symbolTable.indexOf(name))
+
+  def write_pop(self, name, subname): #dispatches pop writes on kindOf
+    #if name is in current scope:
+    if((self.symbol_table.current_scope == "subroutine" and name in self.symbol_table.subroutine_scope) or
+      (name in self.symbol_table.class_scope)):
+      if(self.symbol_table.kindOf(name) == "var"):
+        self.vm_writer.writePop("local", self.symbol_table.indexOf(name))
+      elif(self.symbol_table.kindOf(name) == "arg"):
+        self.vm_writer.writePop("argument", self.symbol_table.indexOf(name))
+    else:
+      if(self.symbol_table.kindOf(name) == "static"):
+        self.vm_writer.writePop("static", self.symbol_table.indexOf(name))
+      else:
+        self.vm_writer.writePop("this", self.symbolTable.indexOf(name))

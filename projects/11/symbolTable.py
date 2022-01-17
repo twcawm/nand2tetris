@@ -13,12 +13,12 @@ class SymbolTable:
     self.count_if = 0
     self.count_while = 0
 
-  def startSubroutine():
+  def startSubroutine(self):
     self.subroutine_scope = {}
     self.count_var = 0
     self.count_arg = 0
 
-  def define(id_name, id_type, id_kind): #id_type is static, field, arg, var
+  def define(self,id_name, id_type, id_kind): #id_type is static, field, arg, var
     if(id_kind == "field"):
       self.class_scope[id_name] = (id_kind, id_type, self.count_field)
       self.count_field += 1
@@ -32,7 +32,8 @@ class SymbolTable:
       self.subroutine_scope[id_name] = (id_kind, id_type, self.count_var)
       self.count_var += 1
   
-  def varCount(id_kind):
+  '''
+  def varCount(self,id_kind):
     if(id_kind == "field"):
       return self.count_field
     if(id_kind == "static"):
@@ -41,6 +42,17 @@ class SymbolTable:
       return self.count_arg
     if(id_kind == "var"):
       return self.count_var
+  '''
+  def varCount(self, id_kind):
+    if(self.current_scope = "subroutine"):
+      l_globals = [meta for (varname, meta) in self.subroutine_scope.items() if meta[0] == id_kind]
+      return len(l_globals)
+    else:
+      return self.classCount(id_kind)
+
+  def classCount(self, id_kind): #specifically the class/global variables of this kind
+    l_globals = [meta for (varname, meta) in self.class_scope.items() if meta[0] == id_kind]
+    return len(l_globals)
 
   def kindOf(id_name): #in a more advanced language this would be a nested search starting from "current scope".  
                        #but here, we only ever have 2 scopes maximum (subroutine and class)

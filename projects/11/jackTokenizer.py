@@ -39,7 +39,7 @@ class JackTokenizer:
     self.current_index = -1 #we need to all advance() to get to the first element of the tokens list.
     self.current_token = None
 
-    self.fix_symbols()
+    #self.fix_symbols() #no need to fix symbols
     #self.output_xml()
 
 

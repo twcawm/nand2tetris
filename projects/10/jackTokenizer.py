@@ -112,7 +112,7 @@ class JackTokenizer:
 
   def stringVal(self):
     if(self.tokenType() == "STRING_CONST"):
-      return int(self.current_token[1])
+      return self.current_token[1]
     else:
       print("error: stringVal() called when tokenType() is not STRING_CONST")
 

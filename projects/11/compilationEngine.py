@@ -147,9 +147,9 @@ class CompilationEngine:
       self.vm_writer.writePop("pointer", 0)
     if(ftype == "constructor"): #code for allocating memory for the object's fields!
       count_globals = self.symbol_table.classCount("field")
-      self.writer.writePush("constant", count_globals)
-      self.writer.writeCall("Memory.alloc", 1) #convention from book
-      self.writer.writePop("pointer", 0) #result: "this" refers to the newly constructed object
+      self.vm_writer.writePush("constant", count_globals)
+      self.vm_writer.writeCall("Memory.alloc", 1) #convention from book
+      self.vm_writer.writePop("pointer", 0) #result: "this" refers to the newly constructed object
 
   def compileVarDec(self):
     #self.write_nonterm_begin("varDec")
@@ -236,7 +236,7 @@ class CompilationEngine:
     else:
       self.vm_writer.writePush('pointer', 0)
       count_locals += 1
-      full_name = self.class_name + "." + first_name
+      full_name = self.class_name + "." + base_name
     self.cadvance() #consume (
     count_locals += self.compileExpressionList()
     self.vm_writer.writeCall(full_name, count_locals)
@@ -470,7 +470,7 @@ class CompilationEngine:
           self.vm_writer.writePush('that', 0)
 #the following section is begging to be refactored to be more pretty...
         elif((self.symbol_table.current_scope == "subroutine" and iname in self.symbol_table.subroutine_scope) or
-           (iname in self.symbol_table.class_scope)):
+           (self.symbol_table.current_scope == "class" and iname in self.symbol_table.class_scope)):
           if(self.symbol_table.kindOf(iname) == "var"):
             self.vm_writer.writePush("local", self.symbol_table.indexOf(iname))
           elif(self.symbol_table.kindOf(iname) == "arg"):
@@ -479,11 +479,11 @@ class CompilationEngine:
           if(self.symbol_table.kindOf(iname) == "static"):
             self.vm_writer.writePush("static", self.symbol_table.indexOf(iname))
           else:
-            print("in compileTerm, varname is " + iname +", symtabs are: ")
-            print("subroutine: ")
-            print(self.symbol_table.subroutine_scope)
-            print("class: ")
-            print(self.symbol_table.class_scope)
+            #print("in compileTerm, varname is " + iname +", symtabs are: ")
+            #print("subroutine: ")
+            #print(self.symbol_table.subroutine_scope)
+            #print("class: ")
+            #print(self.symbol_table.class_scope)
             self.vm_writer.writePush("this", self.symbol_table.indexOf(iname))
 
       
@@ -494,7 +494,7 @@ class CompilationEngine:
   def write_push(self, name, subname): #dispatches push writes on kindOf
     #if name is in current scope:
     if((self.symbol_table.current_scope == "subroutine" and name in self.symbol_table.subroutine_scope) or
-      (name in self.symbol_table.class_scope)):
+      (self.symbol_table.current_scope == "class" and name in self.symbol_table.class_scope)):
       if(self.symbol_table.kindOf(name) == "var"):
         self.vm_writer.writePush("local", self.symbol_table.indexOf(name))
       elif(self.symbol_table.kindOf(name) == "arg"):
@@ -503,12 +503,12 @@ class CompilationEngine:
       if(self.symbol_table.kindOf(name) == "static"):
         self.vm_writer.writePush("static", self.symbol_table.indexOf(name))
       else:
-        self.vm_writer.writePush("this", self.symbolTable.indexOf(name))
+        self.vm_writer.writePush("this", self.symbol_table.indexOf(name))
 
   def write_pop(self, name): #dispatches pop writes on kindOf
     #if name is in current scope:
     if((self.symbol_table.current_scope == "subroutine" and name in self.symbol_table.subroutine_scope) or
-      (name in self.symbol_table.class_scope)):
+      (self.symbol_table.current_scope == "class" and name in self.symbol_table.class_scope)):
       if(self.symbol_table.kindOf(name) == "var"):
         self.vm_writer.writePop("local", self.symbol_table.indexOf(name))
       elif(self.symbol_table.kindOf(name) == "arg"):
